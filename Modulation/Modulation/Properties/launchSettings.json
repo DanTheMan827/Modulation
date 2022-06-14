@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Unpacked": {
+      "commandName": "Project",
+      "commandLineArgs": "\"P:\\rpcs3_win64\\dev_hdd0\\game\\NPUB31810\\USRDIR\\unpacked_dir\\main_ps3.hdr\""
+    },
+    "Packed": {
+      "commandName": "Project",
+      "commandLineArgs": "\"P:\\rpcs3_win64\\dev_hdd0\\game\\NPUB31810\\USRDIR\\main_ps3.hdr\""
+    }
+  }
+}

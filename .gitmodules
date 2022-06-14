@@ -1,0 +1,3 @@
+[submodule "DtxCS"]
+	path = DtxCS
+	url = https://github.com/maxton/DtxCS.git

@@ -1,0 +1,27 @@
+﻿<Window x:Class="DanTheMan827.Modulation.Views.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DanTheMan827.Modulation"
+        mc:Ignorable="d"
+        xmlns:VM="clr-namespace:DanTheMan827.Modulation.ViewModels"
+        Title="{Binding Title.Value}"
+        Closing="Window_Closing"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded"
+        >
+    <Window.DataContext>
+        <VM:ProgressWindowViewModel x:Name="ViewModel" />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding Message.Value}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Margin="8"></TextBlock>
+        <ProgressBar IsIndeterminate="True" Height="24" MinWidth="200" Grid.Row="1"/>
+    </Grid>
+</Window>

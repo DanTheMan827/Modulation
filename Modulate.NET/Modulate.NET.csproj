@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <RootNamespace>DanTheMan827.ModulateDotNet</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DanTheMan827.EasyTempFolder" Version="1.0.1" />
+    <PackageReference Include="SharpCompress" Version="0.32.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Modulate.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
