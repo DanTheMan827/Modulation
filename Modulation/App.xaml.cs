@@ -79,11 +79,8 @@ namespace DanTheMan827.Modulation
                 else
                 {
                     this.UnpackedTemp = new EasyTempFolder("Unpacked", SharedTemp);
-                    await Task.Run(async () =>
-                    {
-                        var info = await Modulate.Unpack(openedPath, this.UnpackedTemp.Path);
-                        OpenedInfo = info;
-                    });
+
+                    OpenedInfo = await Modulate.Unpack(openedPath, this.UnpackedTemp.Path);
 
                     if (progressActions != null)
                     {

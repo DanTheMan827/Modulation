@@ -11,7 +11,9 @@ namespace DanTheMan827.Modulation.ViewModels
         public ObservableCollection<Song> Songs { get; set; } = new ObservableCollection<Song>();
         public ObservableProperty<bool> ShowSongs { get; set; } = new ObservableProperty<bool>(false);
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public SongsWindowViewModel()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             if (App.IsDesign)
             {

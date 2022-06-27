@@ -104,10 +104,7 @@ namespace DanTheMan827.Modulation.Views
 
                     _ = progActions.Show();
 
-                    await Task.Run(async () =>
-                    {
-                        this.modulate.ArchiveSong(song.SongFolder, file, AppResources.ZipReadme);
-                    });
+                    await this.modulate.ArchiveSong(song.SongFolder, file, AppResources.ZipReadme);
 
                     await progActions.Close();
                 }
@@ -183,10 +180,7 @@ namespace DanTheMan827.Modulation.Views
                     var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
                     _ = progActions.Show();
 
-                    await Task.Run(async () =>
-                    {
-                        await this.modulate.Pack(fi.Directory.FullName);
-                    });
+                    await this.modulate.Pack(fi.Directory.FullName);
 
                     await progActions.Close();
                 }
@@ -368,10 +362,7 @@ namespace DanTheMan827.Modulation.Views
                     var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
                     _ = progActions.Show();
 
-                    await Task.Run(async () =>
-                    {
-                        await this.modulate.Pack(this.openedInfo.SourcePath);
-                    });
+                    await this.modulate.Pack(this.openedInfo.SourcePath);
 
                     await progActions.Close();
                     this.ChangesMade = false;

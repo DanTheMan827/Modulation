@@ -34,12 +34,12 @@ namespace DanTheMan827.Modulation.Views
             var actions = new ShowCloseActions
             {
                 Show = () => Task.Run(() =>
-            {
-                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    _ = (progWnd?.ShowDialog());
-                });
-            }),
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _ = (progWnd?.ShowDialog());
+                    });
+                }),
 
                 Close = async () =>
                 {
@@ -84,7 +84,7 @@ namespace DanTheMan827.Modulation.Views
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            var hwnd = new WindowInteropHelper(this).Handle;
             _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
         }
 

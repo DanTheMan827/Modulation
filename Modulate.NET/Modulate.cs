@@ -136,7 +136,7 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(unpackedInfo.UnpackedPath);
 
             var proc = Process.Start(launchInfo);
-            string output = proc.StandardOutput.ReadToEnd();
+            string output = await proc.StandardOutput.ReadToEndAsync();
             await Task.Run(proc.WaitForExit);
 
             unpackedInfo.ExitCode = proc.ExitCode;
@@ -191,7 +191,7 @@ namespace DanTheMan827.ModulateDotNet
 
 
             var proc = Process.Start(launchInfo);
-            string output = proc.StandardOutput.ReadToEnd();
+            string output = await proc.StandardOutput.ReadToEndAsync();
             await Task.Run(proc.WaitForExit);
 
             if (proc.ExitCode != 0)
@@ -259,7 +259,7 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(packedPath);
 
             var proc = Process.Start(launchInfo);
-            string output = proc.StandardOutput.ReadToEnd();
+            string output = await proc.StandardOutput.ReadToEndAsync();
             await Task.Run(proc.WaitForExit);
 
             if (proc.ExitCode != 0)
@@ -308,7 +308,7 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(song);
 
             var proc = Process.Start(launchInfo);
-            string output = proc.StandardOutput.ReadToEnd();
+            string output = await proc.StandardOutput.ReadToEndAsync();
             await Task.Run(proc.WaitForExit);
 
             if (proc.ExitCode != 0)
@@ -424,8 +424,8 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(songName);
 
             var proc = Process.Start(launchInfo);
+            string output = await proc.StandardOutput.ReadToEndAsync();
             await Task.Run(proc.WaitForExit);
-            string output = proc.StandardOutput.ReadToEnd();
 
             if (proc.ExitCode != 0)
             {
@@ -435,17 +435,17 @@ namespace DanTheMan827.ModulateDotNet
             return;
         }
 
-        public void ArchiveSong(string songName, Stream outputStream, string readmeText = null)
+        public Task ArchiveSong(string songName, Stream outputStream, string readmeText = null)
         {
-            ArchiveSong(this.UnpackedInfo, songName, outputStream, readmeText);
+            return ArchiveSong(this.UnpackedInfo, songName, outputStream, readmeText);
         }
 
-        public static void ArchiveSong(UnpackedInfo unpackedInfo, string songName, Stream outputStream, string readmeText = null)
+        public static Task ArchiveSong(UnpackedInfo unpackedInfo, string songName, Stream outputStream, string readmeText = null)
         {
-            ArchiveSong(unpackedInfo.UnpackedPath, songName, outputStream, readmeText);
+            return ArchiveSong(unpackedInfo.UnpackedPath, songName, outputStream, readmeText);
         }
 
-        public static void ArchiveSong(string unpackedPath, string songName, Stream outputStream, string readmeText = null)
+        public static async Task ArchiveSong(string unpackedPath, string songName, Stream outputStream, string readmeText = null)
         {
             if (unpackedPath == null)
             {
@@ -480,14 +480,14 @@ namespace DanTheMan827.ModulateDotNet
 
                 using var readme = demoFile.Open();
                 using var streamWriter = new StreamWriter(readme);
-                streamWriter.Write(readmeText);
+                await streamWriter.WriteAsync(readmeText);
             }
 
             _ = archive.CreateEntry($"{songName}/");
 
             foreach (string extension in coreSongExtensions)
             {
-                _ = archive.CreateEntryFromFile(Path.Combine(songPath, songName, $"{songName}.{extension}"), $"{songName}/{songName}.{extension}");
+                _ = await Task.Run(() => archive.CreateEntryFromFile(Path.Combine(songPath, songName, $"{songName}.{extension}"), $"{songName}/{songName}.{extension}"));
             }
         }
     }
