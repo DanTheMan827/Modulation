@@ -11,7 +11,7 @@ namespace DanTheMan827.ModulateDotNet
 {
     public static class Modulate
     {
-        public static string ModulatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Modulate.exe");
+        public static string ModulatePath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ModulateExe.Shared.ExePath);
         public static readonly string[] baseSongs = new string[] {
             "allthetime", "assault_on", "astrosight", "breakforme", "concept", "crazy_ride", "credits", "crystal",
             "dalatecht", "decode_me", "digitalparalysis", "donot", "dreamer", "energize", "entomophobia", "forcequit",
