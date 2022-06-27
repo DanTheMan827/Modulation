@@ -18,12 +18,12 @@ namespace DanTheMan827.ModulateDotNet
         /// The path to the unpacked files.
         /// </summary>
         public string UnpackedPath { get; internal set; }
-        
+
         /// <summary>
         /// The path to the header file.
         /// </summary>
         public string HeaderPath { get; internal set; }
-        
+
         /// <summary>
         /// The log from Modulate.exe
         /// </summary>
@@ -38,6 +38,6 @@ namespace DanTheMan827.ModulateDotNet
         /// The exit code from Modulate.exe
         /// </summary>
         public int ExitCode { get; internal set; }
-        public string SongsPath => Path.Combine(UnpackedPath, Console == UnpackedType.PS3 ? "ps3" : "ps4", "songs");
+        public string SongsPath => Path.Combine(this.UnpackedPath, this.Console == UnpackedType.PS3 ? "ps3" : "ps4", "songs");
     }
 }

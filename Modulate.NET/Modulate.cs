@@ -19,7 +19,7 @@ namespace DanTheMan827.ModulateDotNet
             "phantoms", "recession", "redgiant", "supraspatial", "synthesized2014", "tut0", "tut1", "tutc",
             "unfinished", "wayfarer", "wetware"
         };
-        private static readonly string[] coreSongExtensions = new String[] { "mid", "mogg", "moggsong" };
+        private static readonly string[] coreSongExtensions = new string[] { "mid", "mogg", "moggsong" };
 
         /// <summary>
         /// Create UnpackedInfo based on manual input.
@@ -43,35 +43,20 @@ namespace DanTheMan827.ModulateDotNet
 
             if (unpackedPath == null)
             {
-                if (errorType == ErrorType.ThrowError)
-                {
-                    throw new ArgumentNullException(nameof(unpackedPath));
-                }
-
-                return null;
+                return errorType == ErrorType.ThrowError ? throw new ArgumentNullException(nameof(unpackedPath)) : (UnpackedInfo)null;
             }
 
             if (!Directory.Exists(headerPath))
             {
-                if (errorType == ErrorType.ThrowError)
-                {
-                    throw new DirectoryNotFoundException(headerPath);
-                }
-
-                return null;
+                return errorType == ErrorType.ThrowError ? throw new DirectoryNotFoundException(headerPath) : (UnpackedInfo)null;
             }
 
             if (!Directory.Exists(unpackedPath))
             {
-                if (errorType == ErrorType.ThrowError)
-                {
-                    throw new DirectoryNotFoundException(unpackedPath);
-                }
-
-                return null;
+                return errorType == ErrorType.ThrowError ? throw new DirectoryNotFoundException(unpackedPath) : (UnpackedInfo)null;
             }
 
-            var ps3Mode = false;
+            bool ps3Mode = false;
 
             if (Directory.Exists(Path.Combine(unpackedPath, "ps3")))
             {
@@ -80,36 +65,25 @@ namespace DanTheMan827.ModulateDotNet
 
             if (!ps3Mode && !Directory.Exists(Path.Combine(unpackedPath, "ps4")))
             {
-                if (errorType == ErrorType.ThrowError)
-                {
-                    throw new DirectoryNotFoundException("Neither a ps3 or ps4 folder can be found in the unpacked path");
-                }
-
-                return null;
+                return errorType == ErrorType.ThrowError
+                    ? throw new DirectoryNotFoundException("Neither a ps3 or ps4 folder can be found in the unpacked path")
+                    : (UnpackedInfo)null;
             }
 
-            var headerFilename = ps3Mode ? "main_ps3.hdr" : "main_ps4.hdr";
-            var headerFullPath = Path.Combine(headerPath, headerFilename);
+            string headerFilename = ps3Mode ? "main_ps3.hdr" : "main_ps4.hdr";
+            string headerFullPath = Path.Combine(headerPath, headerFilename);
 
-            if (!File.Exists(headerFullPath))
-            {
-                if (errorType == ErrorType.ThrowError)
+            return !File.Exists(headerFullPath)
+                ? errorType == ErrorType.ThrowError ? throw new FileNotFoundException(headerFullPath) : (UnpackedInfo)null
+                : new UnpackedInfo()
                 {
-                    throw new FileNotFoundException(headerFullPath);
-                }
-
-                return null;
-            }
-
-            return new UnpackedInfo()
-            {
-                FromUnpacked = true,
-                HeaderPath = headerPath,
-                UnpackedPath = unpackedPath,
-                UnpackLog = "Info created manually.",
-                Console = ps3Mode ? UnpackedType.PS3 : UnpackedType.PS4,
-                ExitCode = 0
-            };
+                    FromUnpacked = true,
+                    HeaderPath = headerPath,
+                    UnpackedPath = unpackedPath,
+                    UnpackLog = "Info created manually.",
+                    Console = ps3Mode ? UnpackedType.PS3 : UnpackedType.PS4,
+                    ExitCode = 0
+                };
         }
 
         public async static Task<UnpackedInfo> Unpack(string packedPath, string unpackedPath)
@@ -119,12 +93,14 @@ namespace DanTheMan827.ModulateDotNet
                 throw new ArgumentNullException();
             }
 
-            var unpackedInfo = new UnpackedInfo();
-            unpackedInfo.HeaderPath = unpackedPath;
-            unpackedInfo.UnpackedPath = unpackedPath; // Path.Combine(unpackedPath, "unpacked");
-            unpackedInfo.SourcePath = packedPath;
-            unpackedInfo.FromUnpacked = false;
-            Directory.CreateDirectory(unpackedInfo.UnpackedPath);
+            var unpackedInfo = new UnpackedInfo
+            {
+                HeaderPath = unpackedPath,
+                UnpackedPath = unpackedPath, // Path.Combine(unpackedPath, "unpacked");
+                SourcePath = packedPath,
+                FromUnpacked = false
+            };
+            _ = Directory.CreateDirectory(unpackedInfo.UnpackedPath);
 
             packedPath = File.Exists(packedPath) ? new FileInfo(packedPath).Directory.FullName : packedPath;
 
@@ -133,8 +109,8 @@ namespace DanTheMan827.ModulateDotNet
                 throw new ArgumentException("Packed path not valid");
             }
 
-            var ps3Mode = File.Exists(Path.Combine(packedPath, "main_ps3.hdr"));
-            var consoleName = (ps3Mode ? "ps3" : "ps4");
+            bool ps3Mode = File.Exists(Path.Combine(packedPath, "main_ps3.hdr"));
+            string consoleName = ps3Mode ? "ps3" : "ps4";
             var launchInfo = new ProcessStartInfo(ModulatePath)
             {
                 WorkingDirectory = packedPath,
@@ -154,7 +130,7 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(unpackedInfo.UnpackedPath);
 
             var proc = Process.Start(launchInfo);
-            var output = proc.StandardOutput.ReadToEnd();
+            string output = proc.StandardOutput.ReadToEnd();
             await Task.Run(proc.WaitForExit);
 
             unpackedInfo.ExitCode = proc.ExitCode;
@@ -164,7 +140,7 @@ namespace DanTheMan827.ModulateDotNet
                 throw new Exception(output);
             }
 
-            var originalHdr = Path.Combine(unpackedInfo.UnpackedPath, $"main_{consoleName}.hdr");
+            string originalHdr = Path.Combine(unpackedInfo.UnpackedPath, $"main_{consoleName}.hdr");
 
             if (!File.Exists(originalHdr))
             {
@@ -179,10 +155,14 @@ namespace DanTheMan827.ModulateDotNet
             return unpackedInfo;
         }
 
-        public static Task<IEnumerable<Song>> ListSongs(UnpackedInfo unpackedInfo) => ListSongs(unpackedInfo.UnpackedPath);
+        public static Task<IEnumerable<Song>> ListSongs(UnpackedInfo unpackedInfo)
+        {
+            return ListSongs(unpackedInfo.UnpackedPath);
+        }
+
         public async static Task<IEnumerable<Song>> ListSongs(string unpackedPath)
         {
-            var ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
             var launchInfo = new ProcessStartInfo(ModulatePath)
             {
                 CreateNoWindow = true,
@@ -200,7 +180,7 @@ namespace DanTheMan827.ModulateDotNet
 
 
             var proc = Process.Start(launchInfo);
-            var output = proc.StandardOutput.ReadToEnd();
+            string output = proc.StandardOutput.ReadToEnd();
             await Task.Run(proc.WaitForExit);
 
             if (proc.ExitCode != 0)
@@ -208,7 +188,7 @@ namespace DanTheMan827.ModulateDotNet
                 throw new Exception(output);
             }
 
-            var results = Regex.Matches(output, @"Song (\d+)\t  (.*?) - (.*?) - (.*?)\r\n\t  (.*)\r\n\t  Unlocked by ([^\s]+) ([^\s]+)\r\n\t  Arena: (.*?)\r\n");
+            MatchCollection results = Regex.Matches(output, @"Song (\d+)\t  (.*?) - (.*?) - (.*?)\r\n\t  (.*)\r\n\t  Unlocked by ([^\s]+) ([^\s]+)\r\n\t  Arena: (.*?)\r\n");
             var songs = new List<Song>();
             foreach (Match result in results)
             {
@@ -232,7 +212,11 @@ namespace DanTheMan827.ModulateDotNet
             return songs;
         }
 
-        public static Task Pack(UnpackedInfo unpackedInfo, string packedPath) => Pack(unpackedInfo.UnpackedPath, packedPath, unpackedInfo.HeaderPath);
+        public static Task Pack(UnpackedInfo unpackedInfo, string packedPath)
+        {
+            return Pack(unpackedInfo.UnpackedPath, packedPath, unpackedInfo.HeaderPath);
+        }
+
         public static async Task Pack(string unpackedPath, string packedPath, string hdrPath)
         {
             if (packedPath == null || unpackedPath == null)
@@ -240,7 +224,7 @@ namespace DanTheMan827.ModulateDotNet
                 throw new ArgumentNullException();
             }
 
-            var ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
             var launchInfo = new ProcessStartInfo(ModulatePath)
             {
                 WorkingDirectory = hdrPath,
@@ -259,7 +243,7 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(packedPath);
 
             var proc = Process.Start(launchInfo);
-            var output = proc.StandardOutput.ReadToEnd();
+            string output = proc.StandardOutput.ReadToEnd();
             await Task.Run(proc.WaitForExit);
 
             if (proc.ExitCode != 0)
@@ -270,7 +254,11 @@ namespace DanTheMan827.ModulateDotNet
             return;
         }
 
-        public static Task RemoveSong(UnpackedInfo unpackedInfo, string song, bool deleteAfter = true) => RemoveSong(unpackedInfo.UnpackedPath, song, deleteAfter);
+        public static Task RemoveSong(UnpackedInfo unpackedInfo, string song, bool deleteAfter = true)
+        {
+            return RemoveSong(unpackedInfo.UnpackedPath, song, deleteAfter);
+        }
+
         public static async Task RemoveSong(string unpackedPath, string song, bool deleteAfter = true)
         {
             if (baseSongs.Contains(song.ToLower()))
@@ -278,9 +266,9 @@ namespace DanTheMan827.ModulateDotNet
                 throw new Exception("Can't remove songs included with game!");
             }
 
-            var ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
-            var songPath = Path.Combine(unpackedPath, ps3Mode ? "ps3" : "ps4", "songs");
-            var songDestPath = Path.Combine(songPath, song);
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            string songPath = Path.Combine(unpackedPath, ps3Mode ? "ps3" : "ps4", "songs");
+            string songDestPath = Path.Combine(songPath, song);
 
             var launchInfo = new ProcessStartInfo(ModulatePath)
             {
@@ -299,7 +287,7 @@ namespace DanTheMan827.ModulateDotNet
             launchInfo.ArgumentList.Add(song);
 
             var proc = Process.Start(launchInfo);
-            var output = proc.StandardOutput.ReadToEnd();
+            string output = proc.StandardOutput.ReadToEnd();
             await Task.Run(proc.WaitForExit);
 
             if (proc.ExitCode != 0)
@@ -319,14 +307,17 @@ namespace DanTheMan827.ModulateDotNet
         public static bool ValidateSong(string songPath, string songName = null)
         {
             var di = new DirectoryInfo(songPath);
-            if (!di.Exists) return false;
+            if (!di.Exists)
+            {
+                return false;
+            }
 
             if (songName == null)
             {
                 songName = di.Name;
             }
 
-            foreach (var extension in coreSongExtensions)
+            foreach (string extension in coreSongExtensions)
             {
                 if (!File.Exists(Path.Combine(di.FullName, $"{songName}.{extension}")))
                 {
@@ -337,7 +328,11 @@ namespace DanTheMan827.ModulateDotNet
             return true;
         }
 
-        public static Task AddSong(UnpackedInfo unpackedInfo, string songSourcePath, string songName = null, bool replace = false) => AddSong(unpackedInfo.UnpackedPath, songSourcePath, songName, replace);
+        public static Task AddSong(UnpackedInfo unpackedInfo, string songSourcePath, string songName = null, bool replace = false)
+        {
+            return AddSong(unpackedInfo.UnpackedPath, songSourcePath, songName, replace);
+        }
+
         public static async Task AddSong(string unpackedPath, string songSourcePath, string songName = null, bool replace = false)
         {
             if (!ValidateSong(songSourcePath, songName))
@@ -345,18 +340,18 @@ namespace DanTheMan827.ModulateDotNet
                 throw new Exception($"Validation failed for {songSourcePath}");
             }
 
-            var ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
-            var consoleName = (ps3Mode ? "ps3" : "ps4");
-            var songPath = Path.Combine(unpackedPath, consoleName, "songs");
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            string consoleName = ps3Mode ? "ps3" : "ps4";
+            string songPath = Path.Combine(unpackedPath, consoleName, "songs");
 
             if (songName == null)
             {
                 songName = new DirectoryInfo(songSourcePath).Name;
             }
 
-            var songDestPath = Path.Combine(songPath, songName);
-            var songDonorName = "tut0";
-            var songDonorPath = Path.Combine(songPath, songDonorName);
+            string songDestPath = Path.Combine(songPath, songName);
+            string songDonorName = "tut0";
+            string songDonorPath = Path.Combine(songPath, songDonorName);
 
             if (Directory.Exists(songDestPath))
             {
@@ -368,9 +363,9 @@ namespace DanTheMan827.ModulateDotNet
                 await RemoveSong(unpackedPath, songName);
             }
 
-            Directory.CreateDirectory(songDestPath);
+            _ = Directory.CreateDirectory(songDestPath);
 
-            foreach (var extension in coreSongExtensions)
+            foreach (string extension in coreSongExtensions)
             {
                 await Task.Run(() =>
                 {
@@ -378,14 +373,14 @@ namespace DanTheMan827.ModulateDotNet
                 });
             }
 
-            foreach (var extension in new String[] { $"mid_{consoleName}", $"png.dta_dta_{consoleName}", $"png_{consoleName}" })
+            foreach (string extension in new string[] { $"mid_{consoleName}", $"png.dta_dta_{consoleName}", $"png_{consoleName}" })
             {
                 await Task.Run(() =>
                 {
                     File.Copy(Path.Combine(songDonorPath, $"{songDonorName}.{extension}"), Path.Combine(songDestPath, $"{songName}.{extension}"));
                 });
             }
-           
+
             var launchInfo = new ProcessStartInfo(ModulatePath)
             {
                 CreateNoWindow = true,
@@ -404,7 +399,7 @@ namespace DanTheMan827.ModulateDotNet
 
             var proc = Process.Start(launchInfo);
             await Task.Run(proc.WaitForExit);
-            var output = proc.StandardOutput.ReadToEnd();
+            string output = proc.StandardOutput.ReadToEnd();
 
             if (proc.ExitCode != 0)
             {
@@ -414,7 +409,11 @@ namespace DanTheMan827.ModulateDotNet
             return;
         }
 
-        public static void ArchiveSong(UnpackedInfo unpackedInfo, string songName, Stream outputStream, string readmeText = null) => ArchiveSong(unpackedInfo.UnpackedPath, songName, outputStream, readmeText);
+        public static void ArchiveSong(UnpackedInfo unpackedInfo, string songName, Stream outputStream, string readmeText = null)
+        {
+            ArchiveSong(unpackedInfo.UnpackedPath, songName, outputStream, readmeText);
+        }
+
         public static void ArchiveSong(string unpackedPath, string songName, Stream outputStream, string readmeText = null)
         {
             if (unpackedPath == null)
@@ -432,10 +431,10 @@ namespace DanTheMan827.ModulateDotNet
                 throw new ArgumentNullException(nameof(songName));
             }
 
-            var ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
-            var consoleName = (ps3Mode ? "ps3" : "ps4");
-            var songPath = Path.Combine(unpackedPath, consoleName, "songs");
-            var songSourcePath = Path.Combine(songPath, songName);
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            string consoleName = ps3Mode ? "ps3" : "ps4";
+            string songPath = Path.Combine(unpackedPath, consoleName, "songs");
+            string songSourcePath = Path.Combine(songPath, songName);
 
             if (ValidateSong(songSourcePath) == false)
             {
@@ -443,25 +442,21 @@ namespace DanTheMan827.ModulateDotNet
             }
 
 
-            using (var archive = new ZipArchive(outputStream, ZipArchiveMode.Create, true))
+            using var archive = new ZipArchive(outputStream, ZipArchiveMode.Create, true);
+            if (readmeText != null)
             {
-                if (readmeText != null)
-                {
-                    var demoFile = archive.CreateEntry("readme.txt");
+                ZipArchiveEntry demoFile = archive.CreateEntry("readme.txt");
 
-                    using (var readme = demoFile.Open())
-                    using (var streamWriter = new StreamWriter(readme))
-                    {
-                        streamWriter.Write(readmeText);
-                    }
-                }
+                using Stream readme = demoFile.Open();
+                using var streamWriter = new StreamWriter(readme);
+                streamWriter.Write(readmeText);
+            }
 
-                archive.CreateEntry($"{songName}/");
+            _ = archive.CreateEntry($"{songName}/");
 
-                foreach (var extension in coreSongExtensions)
-                {
-                    archive.CreateEntryFromFile(Path.Combine(songPath, songName, $"{songName}.{extension}"), $"{songName}/{songName}.{extension}");
-                }
+            foreach (string extension in coreSongExtensions)
+            {
+                _ = archive.CreateEntryFromFile(Path.Combine(songPath, songName, $"{songName}.{extension}"), $"{songName}/{songName}.{extension}");
             }
         }
     }

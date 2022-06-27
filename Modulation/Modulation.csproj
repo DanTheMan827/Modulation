@@ -9,24 +9,20 @@
     <ApplicationIcon>wave_sound_22.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\DtxCS\Library\Builtins.cs" Link="DtxCs\Builtins.cs" />
-    <Compile Include="..\..\DtxCS\Library\CryptStream.cs" Link="DtxCs\CryptStream.cs" />
-    <Compile Include="..\..\DtxCS\Library\DataTypes\ArrayTypes.cs" Link="DtxCs\ArrayTypes.cs" />
-    <Compile Include="..\..\DtxCS\Library\DataTypes\AtomicTypes.cs" Link="DtxCs\AtomicTypes.cs" />
-    <Compile Include="..\..\DtxCS\Library\DataTypes\Directives.cs" Link="DtxCs\Directives.cs" />
-    <Compile Include="..\..\DtxCS\Library\DataTypes\Types.cs" Link="DtxCs\Types.cs" />
-    <Compile Include="..\..\DtxCS\Library\DTX.cs" Link="DtxCs\DTX.cs" />
-    <Compile Include="..\..\DtxCS\Library\StreamExtensions.cs" Link="DtxCs\StreamExtensions.cs" />
+    <Compile Include="..\DtxCS\Library\Builtins.cs" Link="DtxCs\Builtins.cs" />
+    <Compile Include="..\DtxCS\Library\CryptStream.cs" Link="DtxCs\CryptStream.cs" />
+    <Compile Include="..\DtxCS\Library\DataTypes\ArrayTypes.cs" Link="DtxCs\ArrayTypes.cs" />
+    <Compile Include="..\DtxCS\Library\DataTypes\AtomicTypes.cs" Link="DtxCs\AtomicTypes.cs" />
+    <Compile Include="..\DtxCS\Library\DataTypes\Directives.cs" Link="DtxCs\Directives.cs" />
+    <Compile Include="..\DtxCS\Library\DataTypes\Types.cs" Link="DtxCs\Types.cs" />
+    <Compile Include="..\DtxCS\Library\DTX.cs" Link="DtxCs\DTX.cs" />
+    <Compile Include="..\DtxCS\Library\StreamExtensions.cs" Link="DtxCs\StreamExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="wave_sound_22.ico" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DanTheMan827.EasyTempFolder" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Modulate.NET\Modulate.NET.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,5 +42,9 @@
 
   <ItemGroup>
     <Folder Include="DtxCs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modulate.NET\Modulate.NET.csproj" />
   </ItemGroup>
 </Project>

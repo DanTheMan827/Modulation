@@ -14,9 +14,9 @@ namespace DanTheMan827.Modulation
     /// </summary>
     public partial class App : Application
     {
-        public static bool IsDesign => (App.Current is not App);
-        public static EasyTempFolder SharedTemp = new EasyTempFolder("Modulation");
-        public EasyTempFolder? UnpackedTemp = null; 
+        public static bool IsDesign => App.Current is not App;
+        public static EasyTempFolder SharedTemp = new("Modulation");
+        public EasyTempFolder? UnpackedTemp = null;
         public static UnpackedInfo OpenedInfo { get; set; }
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -58,15 +58,15 @@ namespace DanTheMan827.Modulation
                 return;
             }
 
-            var folderUnpackedState = Modulate.FromUnpacked(openedPath);
+            UnpackedInfo? folderUnpackedState = Modulate.FromUnpacked(openedPath);
 
             ProgressWindow.ShowCloseActions? progressActions = null;
             if (folderUnpackedState == null)
             {
                 progressActions = ProgressWindow.GetActions("Unpacking", "Unpacking ark files to temporary folder.");
-                progressActions?.Show();
+                _ = (progressActions?.Show());
             }
-            
+
 
             var mainWindow = new SongsWindow();
 
@@ -78,10 +78,10 @@ namespace DanTheMan827.Modulation
                 }
                 else
                 {
-                    UnpackedTemp = new EasyTempFolder("Unpacked", SharedTemp);
+                    this.UnpackedTemp = new EasyTempFolder("Unpacked", SharedTemp);
                     await Task.Run(async () =>
                     {
-                        var info = await Modulate.Unpack(openedPath, UnpackedTemp.Path);
+                        UnpackedInfo? info = await Modulate.Unpack(openedPath, this.UnpackedTemp.Path);
                         App.OpenedInfo = info;
                     });
 
@@ -96,7 +96,7 @@ namespace DanTheMan827.Modulation
                 await mainWindow.UpdateSongs(App.OpenedInfo);
                 mainWindow.Show();
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
                 Application.Current.Shutdown();
             }
@@ -105,7 +105,7 @@ namespace DanTheMan827.Modulation
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             ModulateExe.Shared.Dispose();
-            UnpackedTemp?.Dispose();
+            this.UnpackedTemp?.Dispose();
             SharedTemp.Dispose();
         }
     }

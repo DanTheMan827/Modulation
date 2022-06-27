@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modulation", "Modulation\Mo
 		{5C92410A-3661-4CB8-848A-180583673EB3} = {5C92410A-3661-4CB8-848A-180583673EB3}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modulate.NET", "..\Modulate.NET\Modulate.NET.csproj", "{5C92410A-3661-4CB8-848A-180583673EB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modulate.NET", "Modulate.NET\Modulate.NET.csproj", "{5C92410A-3661-4CB8-848A-180583673EB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

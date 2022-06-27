@@ -1,18 +1,17 @@
 ﻿using DanTheMan827.TempFolders;
 using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace DanTheMan827.ModulateDotNet
 {
-    public sealed class ModulateExe: IDisposable
+    public sealed class ModulateExe : IDisposable
     {
         /// <summary>
         /// Set this to a path before using the shared instance if you want the exe to be unpacked somewhere specific.
         /// </summary>
         public static string TempBasePath { get; set; } = null;
         private static ModulateExe? _lazyModulateExe = null;
-        public static ModulateExe Shared => _lazyModulateExe == null ? _lazyModulateExe = new ModulateExe() : _lazyModulateExe;
+        public static ModulateExe Shared => _lazyModulateExe ??= new ModulateExe();
 
         public string ExePath { get; private set; }
         private EasyTempFolder tempFolder = new EasyTempFolder("Modulate", TempBasePath);
@@ -23,19 +22,19 @@ namespace DanTheMan827.ModulateDotNet
         /// </summary>
         private ModulateExe()
         {
-            UnpackExe();
+            this.UnpackExe();
         }
 
         private void UnpackExe()
         {
-            ExePath = Path.Combine(tempFolder.Path, "Modulate.exe");
+            this.ExePath = Path.Combine(this.tempFolder.Path, "Modulate.exe");
 
-            File.WriteAllBytes(ExePath, Resources.Modulate);
+            File.WriteAllBytes(this.ExePath, Resources.Modulate);
         }
 
         private void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!this.disposedValue)
             {
                 if (disposing)
                 {
@@ -49,7 +48,7 @@ namespace DanTheMan827.ModulateDotNet
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
-                disposedValue = true;
+                this.disposedValue = true;
             }
         }
 
@@ -57,13 +56,13 @@ namespace DanTheMan827.ModulateDotNet
         ~ModulateExe()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: false);
+            this.Dispose(disposing: false);
         }
 
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

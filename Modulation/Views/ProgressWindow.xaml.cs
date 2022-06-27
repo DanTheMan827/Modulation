@@ -16,9 +16,10 @@ namespace DanTheMan827.Modulation.Views
             public Func<Task> Show;
             public Func<Task> Close;
 
-            public ShowCloseActions() {
-                Show = async () => { };
-                Close = async () => { };
+            public ShowCloseActions()
+            {
+                this.Show = async () => { };
+                this.Close = async () => { };
             }
         }
 
@@ -30,22 +31,23 @@ namespace DanTheMan827.Modulation.Views
                 progWnd = new ProgressWindow(title, message, owner, ownedStartupLocation);
             });
 
-            var actions = new ShowCloseActions();
-
-            actions.Show = () => Task.Run(() =>
+            var actions = new ShowCloseActions
+            {
+                Show = () => Task.Run(() =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    progWnd?.ShowDialog();
+                    _ = (progWnd?.ShowDialog());
                 });
-            });
+            }),
 
-            actions.Close = async () =>
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                Close = async () =>
                 {
-                    progWnd?.Close();
-                });
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        progWnd?.Close();
+                    });
+                }
             };
 
             return actions;
@@ -60,14 +62,14 @@ namespace DanTheMan827.Modulation.Views
 
         public ProgressWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         public ProgressWindow(string title, string message, Window? owner = null, WindowStartupLocation ownedStartupLocation = WindowStartupLocation.CenterOwner)
         {
-            InitializeComponent();
-            ViewModel.Title.Value = title;
-            ViewModel.Message.Value = message;
+            this.InitializeComponent();
+            this.ViewModel.Title.Value = title;
+            this.ViewModel.Message.Value = message;
 
             if (owner != null)
             {
@@ -82,8 +84,8 @@ namespace DanTheMan827.Modulation.Views
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var hwnd = new WindowInteropHelper(this).Handle;
-            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
         }
 
 

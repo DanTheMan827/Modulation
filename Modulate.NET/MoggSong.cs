@@ -14,7 +14,7 @@ namespace DanTheMan827.ModulateDotNet
         public string Artist { get; set; }
         public string ShortArtist { get; set; }
         public string Description { get; set; }
-        public string CleanDescription => Description == null ? null : cleanRegex.Replace(Description, " ");
+        public string CleanDescription => this.Description == null ? null : cleanRegex.Replace(this.Description, " ");
         public string UnlockRequirement { get; set; }
         public int Bpm { get; set; }
         public int PreviewStartMs { get; set; }

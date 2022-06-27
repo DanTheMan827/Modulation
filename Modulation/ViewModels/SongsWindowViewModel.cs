@@ -1,11 +1,5 @@
 ﻿using DanTheMan827.ModulateDotNet;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Linq;
-using System.IO;
-using System.ComponentModel;
 using System.Windows;
 
 namespace DanTheMan827.Modulation.ViewModels
@@ -21,7 +15,7 @@ namespace DanTheMan827.Modulation.ViewModels
         {
             if (App.IsDesign)
             {
-                Songs.Add(new Song()
+                this.Songs.Add(new Song()
                 {
                     ID = "MYSONG",
                     Name = "My Song",
