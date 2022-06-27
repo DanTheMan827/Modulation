@@ -1,0 +1,39 @@
+name: Build artifact.
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+
+jobs:
+
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+
+    # Install the .NET Core workload
+    - name: Install .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    # Create the app package by building and packaging the Windows Application Packaging project
+    - name: Build the app
+      run: |
+        cd Modulation/Modulation
+        dotnet publish -c Release -o ../../publish/Modulation -r win-x64 -p:PublishSingleFile=true --self-contained=false
+        
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: "Modulation"
+        path: publish/Modulation/Modulation.exe
+
