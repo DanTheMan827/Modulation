@@ -28,8 +28,8 @@ jobs:
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Build the app
       run: |
-        cd Modulation/Modulation
-        dotnet publish -c Release -o ../../publish/Modulation -r win-x64 -p:PublishSingleFile=true --self-contained=false
+        cd Modulation
+        dotnet publish -c Release -o ../publish/Modulation -r win-x64 -p:PublishSingleFile=true --self-contained=false
         
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.0
