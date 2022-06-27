@@ -13,4 +13,6 @@ If you open an unpacked .hdr, the contents will be opened and modified in-place,
 To pack the loose files, you can use File > Save As.
 
 ## Attributions
+- [Modulate by Adam Clixby](https://github.com/adamclixby/modulate/).
+- [DtxCs by Maxton](https://github.com/maxton/DtxCS)
 - [Icon by Vecteezy](https://www.vecteezy.com/vector-art/583248-sound-wave-ilustration-logo-vector-icon-template)
