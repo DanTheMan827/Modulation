@@ -19,8 +19,11 @@ namespace DanTheMan827.Modulation.Views
     /// </summary>
     public partial class SongsWindow : Window
     {
-        public bool ChangesMade { get; set; } = false;
-        private bool promptSave => this.ViewModel.OpenedInfo?.FromUnpacked == false && this.ChangesMade == true;
+        private UnpackedInfo openedInfo => this.ViewModel.Modulate.UnpackedInfo;
+        private Modulate modulate => this.ViewModel.Modulate;
+        public bool ChangesMade
+        { get; set; } = false;
+        private bool promptSave => this.openedInfo?.FromUnpacked == false && this.ChangesMade == true;
 
         public SongsWindow()
         {
@@ -34,25 +37,15 @@ namespace DanTheMan827.Modulation.Views
             this.ViewModel.ShowSongs.Value = this.ViewModel.Songs.Count > 0;
         }
 
-        public async Task UpdateSongs(UnpackedInfo? openedInfo = null)
+        public async Task UpdateSongs()
         {
-            if (this.ViewModel.OpenedInfo == null)
-            {
-                this.ViewModel.OpenedInfo = openedInfo;
-            }
-
-            if (this.ViewModel.OpenedInfo == null)
-            {
-                throw new ArgumentNullException(nameof(openedInfo));
-            }
-
             this.ViewModel.Songs.Clear();
 
-            var songs = (await Modulate.ListSongs(this.ViewModel.OpenedInfo)).Where(s => !Modulate.baseSongs.Contains(s.SongFolder));
+            var songs = (await this.modulate.ListSongs()).Where(s => !Modulate.baseSongs.Contains(s.SongFolder));
 
             foreach (var song in songs)
             {
-                using var dtxStream = File.OpenRead(Path.Combine(this.ViewModel.OpenedInfo.SongsPath, song.SongFolder, $"{song.SongFolder}.moggsong"));
+                using var dtxStream = File.OpenRead(Path.Combine(this.openedInfo.SongsPath, song.SongFolder, $"{song.SongFolder}.moggsong"));
                 var root = DTX.FromDtaStream(dtxStream);
                 song.MoggSong = new MoggSong().LoadDta(root);
             }
@@ -89,7 +82,7 @@ namespace DanTheMan827.Modulation.Views
         private async void ButtonPack_Click(object sender, RoutedEventArgs e)
         {
             var song = (Song?)((Button?)sender)?.Tag;
-            if (song == null || this.ViewModel.OpenedInfo == null)
+            if (song == null || this.openedInfo == null)
             {
                 return;
             }
@@ -113,7 +106,7 @@ namespace DanTheMan827.Modulation.Views
 
                     await Task.Run(async () =>
                     {
-                        Modulate.ArchiveSong(this.ViewModel.OpenedInfo, song.SongFolder, file, AppResources.ZipReadme);
+                        this.modulate.ArchiveSong(song.SongFolder, file, AppResources.ZipReadme);
                     });
 
                     await progActions.Close();
@@ -128,19 +121,19 @@ namespace DanTheMan827.Modulation.Views
         private async void ButtonDelete_Click(object sender, RoutedEventArgs e)
         {
             var song = (Song?)((Button?)sender)?.Tag;
-            if (song == null || this.ViewModel.OpenedInfo == null)
+            if (song == null || this.openedInfo == null)
             {
                 return;
             }
 
-            string? songPath = Path.Combine(this.ViewModel.OpenedInfo.SongsPath, song.SongFolder);
+            string? songPath = Path.Combine(this.openedInfo.SongsPath, song.SongFolder);
 
             var progActions = ProgressWindow.GetActions("Deleting Song", "Deleting: " + song.SongFolder, this);
             _ = progActions.Show();
             this.ChangesMade = true;
             try
             {
-                await Modulate.RemoveSong(this.ViewModel.OpenedInfo, song.SongFolder);
+                await this.modulate.RemoveSong(song.SongFolder);
                 _ = this.ViewModel.Songs.Remove(song);
             }
             catch (Exception ex)
@@ -160,7 +153,7 @@ namespace DanTheMan827.Modulation.Views
 
         private async void SaveAs_Click(object sender, RoutedEventArgs e)
         {
-            string? consoleName = this.ViewModel.OpenedInfo.Console == UnpackedType.PS3 ? "ps3" : "ps4";
+            string? consoleName = this.openedInfo.Console == UnpackedType.PS3 ? "ps3" : "ps4";
             string? headerName = $"main_{consoleName}.hdr";
             var saveDialog = new SaveFileDialog()
             {
@@ -179,7 +172,7 @@ namespace DanTheMan827.Modulation.Views
                     return;
                 }
 
-                if (fi.Directory.FullName.ToLower() == this.ViewModel.OpenedInfo.HeaderPath.ToLower())
+                if (fi.Directory!.FullName.ToLower() == this.openedInfo.HeaderPath.ToLower())
                 {
                     _ = MessageBox.Show("Destination path cannot be the same as the source path.", "Invalid Path", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
@@ -192,7 +185,7 @@ namespace DanTheMan827.Modulation.Views
 
                     await Task.Run(async () =>
                     {
-                        await Modulate.Pack(this.ViewModel.OpenedInfo, fi.Directory.FullName);
+                        await this.modulate.Pack(fi.Directory.FullName);
                     });
 
                     await progActions.Close();
@@ -206,7 +199,7 @@ namespace DanTheMan827.Modulation.Views
 
         private void Window_Activated(object sender, EventArgs e)
         {
-            this.Title = this.ViewModel.OpenedInfo.FromUnpacked ? this.ViewModel.OpenedInfo.HeaderPath : this.ViewModel.OpenedInfo.SourcePath;
+            this.Title = this.openedInfo.FromUnpacked ? this.openedInfo.HeaderPath : this.openedInfo.SourcePath;
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e)
@@ -236,7 +229,7 @@ namespace DanTheMan827.Modulation.Views
                             string? songName = file.Split(Path.DirectorySeparatorChar).Last();
                             songName = songName[..songName.LastIndexOf(".")];
 
-                            if (Directory.Exists(Path.Combine(this.ViewModel.OpenedInfo.SongsPath, songName)))
+                            if (Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
                             {
                                 if (MessageBox.Show($"The song \"{songName}\" already exists, do you want to overwrite?", "Song Already Exists", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                                 {
@@ -248,7 +241,7 @@ namespace DanTheMan827.Modulation.Views
                             _ = (progActions?.Show());
                             this.ChangesMade = true;
 
-                            await Modulate.AddSong(this.ViewModel.OpenedInfo, songPath, songName, true);
+                            await this.modulate.AddSong(songPath, songName, true);
                             addedSong = true;
                         }
                         catch (Exception ex)
@@ -292,7 +285,7 @@ namespace DanTheMan827.Modulation.Views
 
                                 if (entries.ContainsKey($"{songPath}{songName}.mid") && entries.ContainsKey($"{songPath}{songName}.mogg"))
                                 {
-                                    if (Directory.Exists(Path.Combine(this.ViewModel.OpenedInfo.SongsPath, songName)))
+                                    if (Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
                                     {
                                         if (MessageBox.Show($"The song \"{songName}\" already exists, do you want to overwrite?", "Song Already Exists", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                                         {
@@ -312,7 +305,7 @@ namespace DanTheMan827.Modulation.Views
                                     entries[$"{songPath}{songName}.mogg"].WriteToDirectory(unpackedSong);
                                     entries[msFile].WriteToDirectory(unpackedSong);
 
-                                    await Modulate.AddSong(this.ViewModel.OpenedInfo, unpackedSong, songName, true);
+                                    await this.modulate.AddSong(unpackedSong, songName, true);
                                     addedSong = true;
 
                                 }
@@ -377,7 +370,7 @@ namespace DanTheMan827.Modulation.Views
 
                     await Task.Run(async () =>
                     {
-                        await Modulate.Pack(this.ViewModel.OpenedInfo, this.ViewModel.OpenedInfo.SourcePath);
+                        await this.modulate.Pack(this.openedInfo.SourcePath);
                     });
 
                     await progActions.Close();

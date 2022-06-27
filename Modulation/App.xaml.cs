@@ -17,9 +17,9 @@ namespace DanTheMan827.Modulation
         public static bool IsDesign => App.Current is not App;
         public static EasyTempFolder SharedTemp = new("Modulation");
         public EasyTempFolder? UnpackedTemp = null;
-        public static UnpackedInfo OpenedInfo { get; set; }
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
+            UnpackedInfo OpenedInfo = null;
             ModulateExe.TempBasePath = SharedTemp;
 
             string? openedPath = null;
@@ -58,7 +58,7 @@ namespace DanTheMan827.Modulation
                 return;
             }
 
-            UnpackedInfo? folderUnpackedState = Modulate.FromUnpacked(openedPath);
+            var folderUnpackedState = Modulate.FromUnpacked(openedPath);
 
             ProgressWindow.ShowCloseActions? progressActions = null;
             if (folderUnpackedState == null)
@@ -81,8 +81,8 @@ namespace DanTheMan827.Modulation
                     this.UnpackedTemp = new EasyTempFolder("Unpacked", SharedTemp);
                     await Task.Run(async () =>
                     {
-                        UnpackedInfo? info = await Modulate.Unpack(openedPath, this.UnpackedTemp.Path);
-                        App.OpenedInfo = info;
+                        var info = await Modulate.Unpack(openedPath, this.UnpackedTemp.Path);
+                        OpenedInfo = info;
                     });
 
                     if (progressActions != null)
@@ -90,10 +90,10 @@ namespace DanTheMan827.Modulation
                         await progressActions.Close();
                     }
                 }
-
-                mainWindow.ViewModel.SaveVisibility.Value = OpenedInfo.FromUnpacked ? Visibility.Collapsed : Visibility.Visible;
+                mainWindow.ViewModel.Modulate = new Modulate(OpenedInfo);
+                mainWindow.ViewModel.SaveVisibility.Value = OpenedInfo!.FromUnpacked ? Visibility.Collapsed : Visibility.Visible;
                 Application.Current.MainWindow = mainWindow;
-                await mainWindow.UpdateSongs(App.OpenedInfo);
+                await mainWindow.UpdateSongs();
                 mainWindow.Show();
             }
             catch (TaskCanceledException)

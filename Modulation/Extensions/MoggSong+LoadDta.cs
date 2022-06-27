@@ -13,18 +13,18 @@ namespace DanTheMan827.Modulation.Extensions
 
             var dict = new Dictionary<string, string>();
 
-            foreach (DataArray? entry in root.Children.Where(x => x is DataArray).Cast<DataArray?>().Where(x => x.Children.Count == 2 && x.Children[0] is DataSymbol && (x.Children[1] is DataAtom || x.Children[1] is DataSymbol)))
+            foreach (var entry in root.Children.Where(x => x is DataArray).Cast<DataArray?>().Where(x => x is not null && x.Children.Count == 2 && x.Children[0] is DataSymbol && (x.Children[1] is DataAtom || x.Children[1] is DataSymbol)))
             {
-                string? key = (entry.Children[0] as DataSymbol).ToString();
-                DataNode? atom = entry.Children[1];
-                string value = atom.ToString();
+                string? key = (entry!.Children[0] as DataSymbol)!.ToString();
+                var atom = entry.Children[1];
+                string? value = atom.ToString();
 
-                if (atom is DataAtom && (atom as DataAtom).Type == DataType.STRING)
+                if (atom is DataAtom castedAtom && castedAtom.Type == DataType.STRING)
                 {
-                    value = (atom as DataAtom).String;
+                    value = castedAtom.String;
                 }
 
-                dict.Add(key, value);
+                dict.Add(key, value!);
             }
 
             if (dict.ContainsKey("mogg_path"))

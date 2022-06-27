@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DanTheMan827.ModulateDotNet
 {
-    public static class Modulate
+    public class Modulate
     {
         public static string ModulatePath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ModulateExe.Shared.ExePath);
         public static readonly string[] baseSongs = new string[] {
@@ -20,6 +20,12 @@ namespace DanTheMan827.ModulateDotNet
             "unfinished", "wayfarer", "wetware"
         };
         private static readonly string[] coreSongExtensions = new string[] { "mid", "mogg", "moggsong" };
+        public UnpackedInfo UnpackedInfo { get; private set; }
+
+        public Modulate(UnpackedInfo unpackedInfo)
+        {
+            this.UnpackedInfo = unpackedInfo;
+        }
 
         /// <summary>
         /// Create UnpackedInfo based on manual input.
@@ -155,6 +161,11 @@ namespace DanTheMan827.ModulateDotNet
             return unpackedInfo;
         }
 
+        public Task<IEnumerable<Song>> ListSongs()
+        {
+            return Modulate.ListSongs(this.UnpackedInfo);
+        }
+
         public static Task<IEnumerable<Song>> ListSongs(UnpackedInfo unpackedInfo)
         {
             return ListSongs(unpackedInfo.UnpackedPath);
@@ -188,7 +199,7 @@ namespace DanTheMan827.ModulateDotNet
                 throw new Exception(output);
             }
 
-            MatchCollection results = Regex.Matches(output, @"Song (\d+)\t  (.*?) - (.*?) - (.*?)\r\n\t  (.*)\r\n\t  Unlocked by ([^\s]+) ([^\s]+)\r\n\t  Arena: (.*?)\r\n");
+            var results = Regex.Matches(output, @"Song (\d+)\t  (.*?) - (.*?) - (.*?)\r\n\t  (.*)\r\n\t  Unlocked by ([^\s]+) ([^\s]+)\r\n\t  Arena: (.*?)\r\n");
             var songs = new List<Song>();
             foreach (Match result in results)
             {
@@ -210,6 +221,11 @@ namespace DanTheMan827.ModulateDotNet
             });
 
             return songs;
+        }
+
+        public Task Pack(string packedPath)
+        {
+            return Modulate.Pack(this.UnpackedInfo, packedPath);
         }
 
         public static Task Pack(UnpackedInfo unpackedInfo, string packedPath)
@@ -252,6 +268,11 @@ namespace DanTheMan827.ModulateDotNet
             }
 
             return;
+        }
+
+        public Task RemoveSong(string song, bool deleteAfter = true)
+        {
+            return Modulate.RemoveSong(this.UnpackedInfo, song, deleteAfter);
         }
 
         public static Task RemoveSong(UnpackedInfo unpackedInfo, string song, bool deleteAfter = true)
@@ -326,6 +347,11 @@ namespace DanTheMan827.ModulateDotNet
             }
 
             return true;
+        }
+
+        public Task AddSong(string songSourcePath, string songName = null, bool replace = false)
+        {
+            return AddSong(this.UnpackedInfo, songSourcePath, songName, replace);
         }
 
         public static Task AddSong(UnpackedInfo unpackedInfo, string songSourcePath, string songName = null, bool replace = false)
@@ -409,6 +435,11 @@ namespace DanTheMan827.ModulateDotNet
             return;
         }
 
+        public void ArchiveSong(string songName, Stream outputStream, string readmeText = null)
+        {
+            ArchiveSong(this.UnpackedInfo, songName, outputStream, readmeText);
+        }
+
         public static void ArchiveSong(UnpackedInfo unpackedInfo, string songName, Stream outputStream, string readmeText = null)
         {
             ArchiveSong(unpackedInfo.UnpackedPath, songName, outputStream, readmeText);
@@ -445,9 +476,9 @@ namespace DanTheMan827.ModulateDotNet
             using var archive = new ZipArchive(outputStream, ZipArchiveMode.Create, true);
             if (readmeText != null)
             {
-                ZipArchiveEntry demoFile = archive.CreateEntry("readme.txt");
+                var demoFile = archive.CreateEntry("readme.txt");
 
-                using Stream readme = demoFile.Open();
+                using var readme = demoFile.Open();
                 using var streamWriter = new StreamWriter(readme);
                 streamWriter.Write(readmeText);
             }

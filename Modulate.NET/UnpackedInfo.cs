@@ -39,5 +39,10 @@ namespace DanTheMan827.ModulateDotNet
         /// </summary>
         public int ExitCode { get; internal set; }
         public string SongsPath => Path.Combine(this.UnpackedPath, this.Console == UnpackedType.PS3 ? "ps3" : "ps4", "songs");
+
+        public static explicit operator Modulate(UnpackedInfo info)
+        {
+            return new Modulate(info);
+        }
     }
 }
