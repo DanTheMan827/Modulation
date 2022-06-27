@@ -1,15 +1,10 @@
 ﻿using DanTheMan827.ModulateDotNet;
+using DanTheMan827.Modulation.Views;
 using DanTheMan827.TempFolders;
 using Microsoft.Win32;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Linq;
-using System.Threading;
-using System.Reflection;
-using System;
-using DanTheMan827.Modulation.Views;
 
 namespace DanTheMan827.Modulation
 {
@@ -20,10 +15,13 @@ namespace DanTheMan827.Modulation
     public partial class App : Application
     {
         public static bool IsDesign => (App.Current is not App);
-        public EasyTempFolder UnpackedTemp { get; set; } = new EasyTempFolder();
+        public static EasyTempFolder SharedTemp = new EasyTempFolder("Modulation");
+        public EasyTempFolder? UnpackedTemp = null; 
         public static UnpackedInfo OpenedInfo { get; set; }
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
+            ModulateExe.TempBasePath = SharedTemp;
+
             string? openedPath = null;
 
             if (e.Args.Length >= 1)
@@ -80,6 +78,7 @@ namespace DanTheMan827.Modulation
                 }
                 else
                 {
+                    UnpackedTemp = new EasyTempFolder("Unpacked", SharedTemp);
                     await Task.Run(async () =>
                     {
                         var info = await Modulate.Unpack(openedPath, UnpackedTemp.Path);
@@ -105,7 +104,9 @@ namespace DanTheMan827.Modulation
 
         private void Application_Exit(object sender, ExitEventArgs e)
         {
-            UnpackedTemp.Dispose();
+            ModulateExe.Shared.Dispose();
+            UnpackedTemp?.Dispose();
+            SharedTemp.Dispose();
         }
     }
 }

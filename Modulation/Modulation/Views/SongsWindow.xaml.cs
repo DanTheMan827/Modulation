@@ -301,7 +301,7 @@ namespace DanTheMan827.Modulation.Views
                                         }
                                     }
 
-                                    using var temp = new TempFolders.EasyTempFolder();
+                                    using var temp = new EasyTempFolder(songName, App.SharedTemp);
                                     var unpackedSong = Path.Combine(temp, songName);
                                     Directory.CreateDirectory(unpackedSong);
 
