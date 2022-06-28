@@ -11,7 +11,7 @@ namespace DanTheMan827.ModulateDotNet
 {
     public class Modulate
     {
-        public static string ModulatePath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ModulateExe.Shared.ExePath);
+        public static string ModulatePath => Path.Combine(ModulateExe.Shared.ExePath);
         public static readonly string[] baseSongs = new string[] {
             "allthetime", "assault_on", "astrosight", "breakforme", "concept", "crazy_ride", "credits", "crystal",
             "dalatecht", "decode_me", "digitalparalysis", "donot", "dreamer", "energize", "entomophobia", "forcequit",
@@ -435,17 +435,17 @@ namespace DanTheMan827.ModulateDotNet
             return;
         }
 
-        public Task ArchiveSong(string songName, Stream outputStream, string readmeText = null)
+        public Task ArchiveSong(Stream outputStream, string readmeText = null, params string[] songNames)
         {
-            return ArchiveSong(this.UnpackedInfo, songName, outputStream, readmeText);
+            return ArchiveSong(this.UnpackedInfo, outputStream, readmeText, songNames);
         }
 
-        public static Task ArchiveSong(UnpackedInfo unpackedInfo, string songName, Stream outputStream, string readmeText = null)
+        public static Task ArchiveSong(UnpackedInfo unpackedInfo, Stream outputStream, string readmeText = null, params string[] songNames)
         {
-            return ArchiveSong(unpackedInfo.UnpackedPath, songName, outputStream, readmeText);
+            return ArchiveSong(unpackedInfo.UnpackedPath, outputStream, readmeText, songNames);
         }
 
-        public static async Task ArchiveSong(string unpackedPath, string songName, Stream outputStream, string readmeText = null)
+        public static async Task ArchiveSong(string unpackedPath, Stream outputStream, string readmeText = null, params string[] songNames)
         {
             if (unpackedPath == null)
             {
@@ -457,23 +457,11 @@ namespace DanTheMan827.ModulateDotNet
                 throw new ArgumentException($"Directory does not exist: {unpackedPath}");
             }
 
-            if (songName == null)
-            {
-                throw new ArgumentNullException(nameof(songName));
-            }
-
             bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
             string consoleName = ps3Mode ? "ps3" : "ps4";
             string songPath = Path.Combine(unpackedPath, consoleName, "songs");
-            string songSourcePath = Path.Combine(songPath, songName);
-
-            if (ValidateSong(songSourcePath) == false)
-            {
-                throw new Exception("Song validation failed.");
-            }
-
-
             using var archive = new ZipArchive(outputStream, ZipArchiveMode.Create, true);
+
             if (readmeText != null)
             {
                 var demoFile = archive.CreateEntry("readme.txt");
@@ -483,11 +471,21 @@ namespace DanTheMan827.ModulateDotNet
                 await streamWriter.WriteAsync(readmeText);
             }
 
-            _ = archive.CreateEntry($"{songName}/");
-
-            foreach (string extension in coreSongExtensions)
+            foreach (string song in songNames)
             {
-                _ = await Task.Run(() => archive.CreateEntryFromFile(Path.Combine(songPath, songName, $"{songName}.{extension}"), $"{songName}/{songName}.{extension}"));
+                string songSourcePath = Path.Combine(songPath, song);
+
+                if (ValidateSong(songSourcePath) == false)
+                {
+                    throw new Exception("Song validation failed.");
+                }
+
+                _ = archive.CreateEntry($"{song}/");
+
+                foreach (string extension in coreSongExtensions)
+                {
+                    _ = await Task.Run(() => archive.CreateEntryFromFile(Path.Combine(songPath, song, $"{song}.{extension}"), $"{song}/{song}.{extension}"));
+                }
             }
         }
     }

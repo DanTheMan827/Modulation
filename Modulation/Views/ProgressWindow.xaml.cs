@@ -15,11 +15,13 @@ namespace DanTheMan827.Modulation.Views
         {
             public Func<Task> Show;
             public Func<Task> Close;
+            public ProgressWindow? WindowReference;
 
             public ShowCloseActions()
             {
                 this.Show = async () => { };
                 this.Close = async () => { };
+                
             }
         }
 
@@ -47,7 +49,9 @@ namespace DanTheMan827.Modulation.Views
                     {
                         progWnd?.Close();
                     });
-                }
+                },
+
+                WindowReference = progWnd
             };
 
             return actions;

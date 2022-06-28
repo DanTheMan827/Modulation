@@ -20,6 +20,8 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
+                <MenuItem Header="_Pack All Songs" Click="PackAllSongs_Click" />
+                <Separator />
                 <MenuItem Header="_Save" Click="Save_Click" Visibility="{Binding SaveVisibility.Value}" />
                 <MenuItem Header="_Save As" Click="SaveAs_Click" />
             </MenuItem>
@@ -91,7 +93,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <Button Click="Button_Click" Grid.Row="2">Refresh Songs</Button>
         </Grid>
     </DockPanel>
     

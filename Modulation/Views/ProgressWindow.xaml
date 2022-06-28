@@ -22,6 +22,6 @@
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <TextBlock Text="{Binding Message.Value}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Margin="8"></TextBlock>
-        <ProgressBar IsIndeterminate="True" Height="24" MinWidth="200" Grid.Row="1"/>
+        <ProgressBar IsIndeterminate="{Binding IsIndeterminate.Value}" Minimum="{Binding Minimum.Value}" Maximum="{Binding Maximum.Value}" Value="{Binding Value.Value}" Height="24" MinWidth="200" Grid.Row="1"/>
     </Grid>
 </Window>

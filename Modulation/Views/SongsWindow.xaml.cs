@@ -104,7 +104,7 @@ namespace DanTheMan827.Modulation.Views
 
                     _ = progActions.Show();
 
-                    await this.modulate.ArchiveSong(song.SongFolder, file, AppResources.ZipReadme);
+                    await this.modulate.ArchiveSong(file, AppResources.ZipReadme, song.SongFolder);
 
                     await progActions.Close();
                 }
@@ -372,6 +372,36 @@ namespace DanTheMan827.Modulation.Views
                 {
                     _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        private async void PackAllSongs_Click(object sender, RoutedEventArgs e)
+        {
+            var saveDialog = new SaveFileDialog()
+            {
+                Filter = $"Zip Files (*.zip)|*.zip",
+                FileName = $"Packed Songs.zip".ReplaceInvalidFilenameChars(),
+                CheckPathExists = true
+            };
+
+            try
+            {
+                if (saveDialog.ShowDialog() == true)
+                {
+                    using var file = File.Create(saveDialog.FileName);
+
+                    var progActions = ProgressWindow.GetActions("Archiving", "Archiving, please wait.", this);
+
+                    _ = progActions.Show();
+
+                    await this.modulate.ArchiveSong(file, AppResources.ZipReadme, this.ViewModel.Songs.Select(s => s.SongFolder).ToArray());
+
+                    await progActions.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
