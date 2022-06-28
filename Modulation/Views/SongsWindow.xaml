@@ -29,7 +29,6 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="24" />
             </Grid.RowDefinitions>
             <TextBlock x:Name="noSongsText" Text="No custom songs were found." Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock.Style>

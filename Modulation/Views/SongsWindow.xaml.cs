@@ -104,7 +104,7 @@ namespace DanTheMan827.Modulation.Views
 
                     _ = progActions.Show();
 
-                    await this.modulate.ArchiveSong(file, AppResources.ZipReadme, song.SongFolder);
+                    await this.modulate.ArchiveSong(file, AppResources.ZipReadme, null, song.SongFolder);
 
                     await progActions.Close();
                 }
@@ -391,12 +391,31 @@ namespace DanTheMan827.Modulation.Views
                     using var file = File.Create(saveDialog.FileName);
 
                     var progActions = ProgressWindow.GetActions("Archiving", "Archiving, please wait.", this);
+                    progActions.ViewModel.Maximum.Value = this.ViewModel.Songs.Count - 1;
+                    progActions.ViewModel.IsIndeterminate.Value = false;
 
                     _ = progActions.Show();
 
-                    await this.modulate.ArchiveSong(file, AppResources.ZipReadme, this.ViewModel.Songs.Select(s => s.SongFolder).ToArray());
+                    try
+                    {
+                        await this.modulate.ArchiveSong(file, AppResources.ZipReadme, (value, max) =>
+                        {
+                            progActions.ViewModel.Value.Value = value;
+                            progActions.ViewModel.Maximum.Value = max;
+                        }, this.ViewModel.Songs.Select(s => s.SongFolder).ToArray());
+                    }
+                    catch (Exception ex)
+                    {
+                        await progActions.Close();
+                        progActions = null;
 
-                    await progActions.Close();
+                        _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                    if (progActions != null)
+                    {
+                        await progActions.Close();
+                    }
                 }
             }
             catch (Exception ex)

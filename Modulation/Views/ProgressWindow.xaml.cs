@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DanTheMan827.Modulation.ViewModels;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,7 +16,7 @@ namespace DanTheMan827.Modulation.Views
         {
             public Func<Task> Show;
             public Func<Task> Close;
-            public ProgressWindow? WindowReference;
+            public ProgressWindowViewModel ViewModel;
 
             public ShowCloseActions()
             {
@@ -51,7 +52,7 @@ namespace DanTheMan827.Modulation.Views
                     });
                 },
 
-                WindowReference = progWnd
+                ViewModel = progWnd!.ViewModel
             };
 
             return actions;

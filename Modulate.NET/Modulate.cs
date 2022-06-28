@@ -435,17 +435,17 @@ namespace DanTheMan827.ModulateDotNet
             return;
         }
 
-        public Task ArchiveSong(Stream outputStream, string readmeText = null, params string[] songNames)
+        public Task ArchiveSong(Stream outputStream, string readmeText = null, Action<long, long> progress = null, params string[] songNames)
         {
-            return ArchiveSong(this.UnpackedInfo, outputStream, readmeText, songNames);
+            return ArchiveSong(this.UnpackedInfo, outputStream, readmeText, progress, songNames);
         }
 
-        public static Task ArchiveSong(UnpackedInfo unpackedInfo, Stream outputStream, string readmeText = null, params string[] songNames)
+        public static Task ArchiveSong(UnpackedInfo unpackedInfo, Stream outputStream, string readmeText = null, Action<long, long> progress = null, params string[] songNames)
         {
-            return ArchiveSong(unpackedInfo.UnpackedPath, outputStream, readmeText, songNames);
+            return ArchiveSong(unpackedInfo.UnpackedPath, outputStream, readmeText, progress, songNames);
         }
 
-        public static async Task ArchiveSong(string unpackedPath, Stream outputStream, string readmeText = null, params string[] songNames)
+        public static async Task ArchiveSong(string unpackedPath, Stream outputStream, string readmeText = null, Action<long, long> progress = null, params string[] songNames)
         {
             if (unpackedPath == null)
             {
@@ -470,9 +470,10 @@ namespace DanTheMan827.ModulateDotNet
                 using var streamWriter = new StreamWriter(readme);
                 await streamWriter.WriteAsync(readmeText);
             }
-
+            long counter = 0;
             foreach (string song in songNames)
             {
+                progress?.Invoke(counter, songNames.Length);
                 string songSourcePath = Path.Combine(songPath, song);
 
                 if (ValidateSong(songSourcePath) == false)
@@ -486,7 +487,11 @@ namespace DanTheMan827.ModulateDotNet
                 {
                     _ = await Task.Run(() => archive.CreateEntryFromFile(Path.Combine(songPath, song, $"{song}.{extension}"), $"{song}/{song}.{extension}"));
                 }
+
+                counter++;
             }
+
+            progress?.Invoke(counter, songNames.Length);
         }
     }
 }
