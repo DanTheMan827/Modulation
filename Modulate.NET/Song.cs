@@ -6,6 +6,7 @@ namespace DanTheMan827.ModulateDotNet
     public class Song
     {
         private static Regex cleanRegex = new Regex(@"[^a-zA-Z\d\s~`!@#$%^&*()_\-+=[{\]}\\|<,>\./?:]+", RegexOptions.Compiled);
+        internal string fullPath = string.Empty;
         private string path = string.Empty;
         private string artist = string.Empty;
         private string arena = string.Empty;
