@@ -427,11 +427,24 @@ namespace DanTheMan827.Modulation.Views
 
         private void OpenBrowser(object sender, RoutedEventArgs e)
         {
-            var control = (Control)sender;
-
-            if (control.Tag.GetType() == typeof(string))
+            object tag = null;
+            if (typeof(FrameworkContentElement).IsAssignableFrom(sender.GetType()))
             {
-                if (Uri.TryCreate(control.Tag as string, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+                tag = ((FrameworkContentElement)sender).Tag;
+            }
+            if (typeof(FrameworkElement).IsAssignableFrom(sender.GetType()))
+            {
+                tag = ((FrameworkElement)sender).Tag;
+            }
+
+            if (tag == null)
+            {
+                return;
+            }
+
+            if (tag.GetType() == typeof(string))
+            {
+                if (Uri.TryCreate(tag as string, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
                 {
                     _ = Process.Start(new ProcessStartInfo()
                     {
