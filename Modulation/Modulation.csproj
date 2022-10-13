@@ -7,6 +7,7 @@
     <PackageId>DanTheMan827.$(AssemblyName)</PackageId>
     <RootNamespace>DanTheMan827.Modulation</RootNamespace>
     <ApplicationIcon>wave_sound_22.ico</ApplicationIcon>
+    <Version>1.1.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\DtxCS\Library\Builtins.cs" Link="DtxCs\Builtins.cs" />

@@ -29,17 +29,17 @@ namespace DanTheMan827.Modulation.Extensions
 
             if (dict.ContainsKey("mogg_path"))
             {
-                moggSong.MoggPath = dict["mogg_path"];
+                moggSong.MoggPath = dict["mogg_path"].Trim();
             }
 
             if (dict.ContainsKey("midi_path"))
             {
-                moggSong.MidiPath = dict["midi_path"];
+                moggSong.MidiPath = dict["midi_path"].Trim();
             }
 
             if (dict.ContainsKey("arena_path"))
             {
-                moggSong.ArenaPath = dict["arena_path"];
+                moggSong.ArenaPath = dict["arena_path"].Trim();
             }
 
             if (dict.ContainsKey("tunnel_scale"))
@@ -53,40 +53,50 @@ namespace DanTheMan827.Modulation.Extensions
 
             if (dict.ContainsKey("title"))
             {
-                moggSong.Title = dict["title"];
+                moggSong.Title = dict["title"].Trim();
             }
 
             if (dict.ContainsKey("title_short"))
             {
-                moggSong.ShortTitle = dict["title_short"];
+                moggSong.ShortTitle = dict["title_short"].Trim();
             }
 
             if (dict.ContainsKey("artist"))
             {
-                moggSong.Artist = dict["artist"];
+                moggSong.Artist = dict["artist"].Trim();
             }
 
             if (dict.ContainsKey("artist_short"))
             {
-                moggSong.ShortArtist = dict["artist_short"];
+                moggSong.ShortArtist = dict["artist_short"].Trim();
+            }
+
+            if (dict.ContainsKey("charter"))
+            {
+                moggSong.Charter = dict["charter"].Trim();
+            }
+
+            if (dict.ContainsKey("demo_video"))
+            {
+                moggSong.DemoVideo = dict["demo_video"].Trim();
             }
 
             if (dict.ContainsKey("desc"))
             {
-                moggSong.Description = dict["desc"];
+                moggSong.Description = dict["desc"].Trim();
             }
 
             if (dict.ContainsKey("unlock_requirement"))
             {
-                moggSong.UnlockRequirement = dict["unlock_requirement"];
+                moggSong.UnlockRequirement = dict["unlock_requirement"].Trim();
             }
 
             if (dict.ContainsKey("bpm"))
             {
 
-                if (int.TryParse(dict["bpm"], out int intVal))
+                if (decimal.TryParse(dict["bpm"], out decimal decValue))
                 {
-                    moggSong.Bpm = intVal;
+                    moggSong.Bpm = decValue;
                 }
             }
 

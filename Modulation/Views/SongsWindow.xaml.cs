@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using SharpCompress.Archives;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -104,7 +105,7 @@ namespace DanTheMan827.Modulation.Views
 
                     _ = progActions.Show();
 
-                    await this.modulate.ArchiveSong(file, AppResources.ZipReadme, null, song.SongFolder);
+                    await this.modulate.ArchiveSong(file, Readme.GenerateReadme(song), null, song.SongFolder);
 
                     await progActions.Close();
                 }
@@ -398,7 +399,7 @@ namespace DanTheMan827.Modulation.Views
 
                     try
                     {
-                        await this.modulate.ArchiveSong(file, AppResources.ZipReadme, (value, max) =>
+                        await this.modulate.ArchiveSong(file, Readme.GenerateReadme(this.ViewModel.Songs.ToArray()), (value, max) =>
                         {
                             progActions.ViewModel.Value.Value = value;
                             progActions.ViewModel.Maximum.Value = max;
@@ -421,6 +422,23 @@ namespace DanTheMan827.Modulation.Views
             catch (Exception ex)
             {
                 _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenBrowser(object sender, RoutedEventArgs e)
+        {
+            var control = (Control)sender;
+
+            if (control.Tag.GetType() == typeof(string))
+            {
+                if (Uri.TryCreate(control.Tag as string, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+                {
+                    _ = Process.Start(new ProcessStartInfo()
+                    {
+                        UseShellExecute = true,
+                        FileName = uriResult.AbsoluteUri
+                    });
+                }
             }
         }
     }

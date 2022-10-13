@@ -31,6 +31,8 @@ namespace DanTheMan827.ModulateDotNet
         public string UnlockValue { get; set; } = string.Empty;
         public string Arena { get => this.MoggSong?.ArenaPath ?? this.arena; set => this.arena = value; }
         public string SongFolder { get; private set; } = string.Empty;
+        public bool HasCharter => !string.IsNullOrWhiteSpace(this.MoggSong?.Charter);
+        public bool HasDemoVideo => !string.IsNullOrWhiteSpace(this.MoggSong?.DemoVideo);
         public MoggSong MoggSong { get; set; }
     }
 }

@@ -14,6 +14,9 @@
         DragEnter="Window_DragEnter"
         Drop="Window_Drop"
         Closing="Window_Closing">
+    <Window.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
     <Window.DataContext>
         <VM:SongsWindowViewModel x:Name="ViewModel" />
     </Window.DataContext>
@@ -25,6 +28,7 @@
                 <MenuItem Header="_Save" Click="Save_Click" Visibility="{Binding SaveVisibility.Value}" />
                 <MenuItem Header="_Save As" Click="SaveAs_Click" />
             </MenuItem>
+            <MenuItem Header="View on GitHub" Click="OpenBrowser" Tag="https://github.com/DanTheMan827/Modulation/" />
         </Menu>
         <Grid>
             <Grid.RowDefinitions>
@@ -67,18 +71,31 @@
                                         <TextBlock Text="{Binding CleanArtist}" FontWeight="Bold" HorizontalAlignment="Stretch" />
                                         <TextBlock Text=" - " FontWeight="Bold" HorizontalAlignment="Stretch" />
                                         <TextBlock Text="{Binding CleanName}" FontWeight="Bold" HorizontalAlignment="Stretch" />
+                                        <TextBlock Visibility="{Binding HasDemoVideo, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" FontWeight="Bold"> - 
+                                            <Hyperlink Click="OpenBrowser" Tag="{Binding MoggSong.DemoVideo}">Demo Video</Hyperlink>
+                                        </TextBlock>
                                     </StackPanel>
+                                    
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="ID: " FontWeight="Bold" HorizontalAlignment="Stretch" />
                                         <TextBlock Text="{Binding SongFolder}" HorizontalAlignment="Stretch" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Description: " FontWeight="Bold" HorizontalAlignment="Stretch" />
-                                        <TextBlock Text="{Binding MoggSong.CleanDescription}" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="BPM: " FontWeight="Bold" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="{Binding MoggSong.Bpm}" HorizontalAlignment="Stretch" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding MoggSong.Charter, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                                        <TextBlock Text="Charter: " FontWeight="Bold" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="{Binding MoggSong.Charter}" HorizontalAlignment="Stretch" />
+                                    </StackPanel>
+                                    <TextBlock 
+                                        Margin="0 6 0 0" 
+                                        Visibility="{Binding MoggSong.CleanDescription, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}"
+                                        Text="{Binding MoggSong.CleanDescription}" 
+                                        HorizontalAlignment="Stretch" />
                                 </StackPanel>
-                                <Button Margin="2" Grid.Column="1" Tag="{Binding }" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" Click="ButtonPack_Click">Pack</Button>
-                                <Button Margin="2 2 4 2" Grid.Column="2" Background="#C00" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" Foreground="White" Tag="{Binding }" Click="ButtonDelete_Click">Delete</Button>
+                                <Button Margin="2" Grid.Column="1" Tag="{Binding }" Width="48" Click="ButtonPack_Click">Pack</Button>
+                                <Button Margin="2 2 4 2" Grid.Column="2" Background="#C00" Width="48" Foreground="White" Tag="{Binding }" Click="ButtonDelete_Click">Delete</Button>
                             </Grid>
                             <DataTemplate.Triggers>
                                 <Trigger Property="ItemsControl.AlternationIndex" Value="0">

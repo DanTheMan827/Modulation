@@ -61,9 +61,24 @@ namespace DanTheMan827.Modulation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This archive was created with Modulation, a free tool based on Modulate by Adam Clixby.
+        ///   Looks up a localized string similar to &lt;html&gt;
+        ///    &lt;head&gt;
+        ///        &lt;title&gt;Modulation Readme&lt;/title&gt;
+        ///        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes&quot; /&gt;
+        ///        &lt;style type=&quot;text/css&quot;&gt;
+        ///            body {
+        ///                background-color: #eeeeee;
+        ///                font-family: sans-serif;
+        ///                font-size: 14px;
+        ///                padding: 1.5em;
+        ///                margin: 0;
+        ///            }
         ///
-        ///https://github.com/DanTheMan827/Modulation/.
+        ///            h3 {
+        ///                margin-top: 0;
+        ///            }
+        ///
+        ///            a {        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ZipReadme {
             get {

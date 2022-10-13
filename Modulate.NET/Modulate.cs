@@ -42,10 +42,7 @@ namespace DanTheMan827.ModulateDotNet
 #nullable restore
         {
 
-            if (headerPath == null)
-            {
-                headerPath = unpackedPath;
-            }
+            headerPath ??= unpackedPath;
 
             if (unpackedPath == null)
             {
@@ -333,10 +330,7 @@ namespace DanTheMan827.ModulateDotNet
                 return false;
             }
 
-            if (songName == null)
-            {
-                songName = di.Name;
-            }
+            songName ??= di.Name;
 
             foreach (string extension in coreSongExtensions)
             {
@@ -370,10 +364,7 @@ namespace DanTheMan827.ModulateDotNet
             string consoleName = ps3Mode ? "ps3" : "ps4";
             string songPath = Path.Combine(unpackedPath, consoleName, "songs");
 
-            if (songName == null)
-            {
-                songName = new DirectoryInfo(songSourcePath).Name;
-            }
+            songName ??= new DirectoryInfo(songSourcePath).Name;
 
             string songDestPath = Path.Combine(songPath, songName);
             string songDonorName = "tut0";
@@ -464,7 +455,7 @@ namespace DanTheMan827.ModulateDotNet
 
             if (readmeText != null)
             {
-                var demoFile = archive.CreateEntry("readme.txt");
+                var demoFile = archive.CreateEntry("readme.html");
 
                 using var readme = demoFile.Open();
                 using var streamWriter = new StreamWriter(readme);
