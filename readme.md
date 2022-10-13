@@ -1,6 +1,6 @@
 # Modulation
 
-![image](https://user-images.githubusercontent.com/790119/175988336-4069055d-416d-4c9d-ba69-49f329d49727.png)
+![image](https://user-images.githubusercontent.com/790119/195498971-5d525deb-a5f7-4f28-a084-ddd5e18dc8c8.png)
 
 This program is a graphical frontend to [Modulate by Adam Clixby](https://github.com/adamclixby/modulate/).
 
