@@ -22,13 +22,25 @@
     </Window.DataContext>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
+            <Menu.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <DockPanel HorizontalAlignment="Stretch" />
+                </ItemsPanelTemplate>
+            </Menu.ItemsPanel>
             <MenuItem Header="_File">
                 <MenuItem Header="_Pack All Songs" Click="PackAllSongs_Click" />
                 <Separator />
                 <MenuItem Header="_Save" Click="Save_Click" Visibility="{Binding SaveVisibility.Value}" />
                 <MenuItem Header="_Save As" Click="SaveAs_Click" />
             </MenuItem>
-            <MenuItem Header="View on GitHub" Click="OpenBrowser" Tag="https://github.com/DanTheMan827/Modulation/" />
+            <MenuItem 
+                Padding="0"
+                HorizontalAlignment="Right"
+                Click="OpenBrowser" Tag="https://github.com/DanTheMan827/Modulation/">
+                <MenuItem.Icon>
+                    <Image Source="/Modulation;component/../Images/github.png" />
+                </MenuItem.Icon>
+            </MenuItem>
         </Menu>
         <Grid>
             <Grid.RowDefinitions>

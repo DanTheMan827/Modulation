@@ -20,6 +20,9 @@
     <Compile Include="..\DtxCS\Library\StreamExtensions.cs" Link="DtxCs\StreamExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\github.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Content Include="wave_sound_22.ico" />
   </ItemGroup>
   <ItemGroup>
