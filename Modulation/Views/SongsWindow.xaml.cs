@@ -454,5 +454,30 @@ namespace DanTheMan827.Modulation.Views
                 }
             }
         }
+
+        private async void ReAddSongs_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var progActions = ProgressWindow.GetActions("Processing", "Processing, please wait.", this);
+                _ = progActions.Show();
+
+                foreach (var song in this.ViewModel.Songs)
+                {
+                    await this.modulate.BuildSong(song.SongFolder);
+                    await this.modulate.RemoveSong(song.SongFolder, false);
+                }
+
+                await this.modulate.AutoAdd();
+                await this.UpdateSongs();
+
+                await progActions.Close();
+                this.ChangesMade = true;
+            }
+            catch (Exception ex)
+            {
+                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

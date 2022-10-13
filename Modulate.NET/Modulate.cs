@@ -220,6 +220,127 @@ namespace DanTheMan827.ModulateDotNet
             return songs;
         }
 
+        public Task BuildSong(string songName)
+        {
+            return Modulate.BuildSong(this.UnpackedInfo, songName);
+        }
+
+        public static Task BuildSong(UnpackedInfo unpackedInfo, string songName)
+        {
+            return BuildSong(unpackedInfo.UnpackedPath, songName);
+        }
+
+        public async static Task BuildSong(string unpackedPath, string songName)
+        {
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            var launchInfo = new ProcessStartInfo(ModulatePath)
+            {
+                WorkingDirectory = unpackedPath,
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
+
+            if (ps3Mode)
+            {
+                launchInfo.ArgumentList.Add("-ps3");
+            }
+
+            launchInfo.ArgumentList.Add("-buildsong");
+            launchInfo.ArgumentList.Add(unpackedPath);
+            launchInfo.ArgumentList.Add(songName);
+
+
+            var proc = Process.Start(launchInfo);
+            string output = await proc.StandardOutput.ReadToEndAsync();
+            await Task.Run(proc.WaitForExit);
+
+            if (proc.ExitCode != 0)
+            {
+                throw new Exception(output);
+            }
+        }
+
+        public Task BuildSongs()
+        {
+            return Modulate.BuildSongs(this.UnpackedInfo);
+        }
+
+        public static Task BuildSongs(UnpackedInfo unpackedInfo)
+        {
+            return BuildSongs(unpackedInfo.UnpackedPath);
+        }
+
+        public async static Task BuildSongs(string unpackedPath)
+        {
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            var launchInfo = new ProcessStartInfo(ModulatePath)
+            {
+                WorkingDirectory = unpackedPath,
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
+
+            if (ps3Mode)
+            {
+                launchInfo.ArgumentList.Add("-ps3");
+            }
+
+            launchInfo.ArgumentList.Add("-buildsongs");
+            launchInfo.ArgumentList.Add(unpackedPath);
+
+
+            var proc = Process.Start(launchInfo);
+            string output = await proc.StandardOutput.ReadToEndAsync();
+            await Task.Run(proc.WaitForExit);
+
+            if (proc.ExitCode != 0)
+            {
+                throw new Exception(output);
+            }
+        }
+
+        public Task AutoAdd()
+        {
+            return Modulate.AutoAdd(this.UnpackedInfo);
+        }
+
+        public static Task AutoAdd(UnpackedInfo unpackedInfo)
+        {
+            return AutoAdd(unpackedInfo.UnpackedPath);
+        }
+
+        public async static Task AutoAdd(string unpackedPath)
+        {
+            bool ps3Mode = Directory.Exists(Path.Combine(unpackedPath, "ps3"));
+            var launchInfo = new ProcessStartInfo(ModulatePath)
+            {
+                WorkingDirectory = unpackedPath,
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
+
+            if (ps3Mode)
+            {
+                launchInfo.ArgumentList.Add("-ps3");
+            }
+
+            launchInfo.ArgumentList.Add("-autoadd");
+            launchInfo.ArgumentList.Add(unpackedPath);
+
+
+            var proc = Process.Start(launchInfo);
+            string output = await proc.StandardOutput.ReadToEndAsync();
+            await Task.Run(proc.WaitForExit);
+
+            if (proc.ExitCode != 0)
+            {
+                throw new Exception(output);
+            }
+        }
+
         public Task Pack(string packedPath)
         {
             return Modulate.Pack(this.UnpackedInfo, packedPath);
