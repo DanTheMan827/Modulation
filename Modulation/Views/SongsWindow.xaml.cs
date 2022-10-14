@@ -2,6 +2,7 @@
 using DanTheMan827.Modulation.Extensions;
 using DanTheMan827.TempFolders;
 using DtxCS;
+using DtxCS.DataTypes;
 using Microsoft.Win32;
 using SharpCompress.Archives;
 using System;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using WPFCustomMessageBox;
 
 namespace DanTheMan827.Modulation.Views
 {
@@ -209,6 +211,7 @@ namespace DanTheMan827.Modulation.Views
                 bool addedSong = false;
 
                 string[] files = ((string[])e.Data.GetData(DataFormats.FileDrop)).Where(file => File.Exists(file)).ToArray();
+                bool overwriteAll = false;
 
                 foreach (string? file in files)
                 {
@@ -224,9 +227,27 @@ namespace DanTheMan827.Modulation.Views
                             string? songName = file.Split(Path.DirectorySeparatorChar).Last();
                             songName = songName[..songName.LastIndexOf(".")];
 
-                            if (Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
+                            if (overwriteAll == false && Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
                             {
-                                if (MessageBox.Show($"The song \"{songName}\" already exists, do you want to overwrite?", "Song Already Exists", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                                var actions = CustomMessageBoxWindow.GetActions(
+                                            $"The song \"{songName}\" already exists, do you want to overwrite?",
+                                            "Song Already Exists",
+                                            new CustomMessageBoxWindow.Button[]
+                                            {
+                                                new CustomMessageBoxWindow.Button() { Label = "Yes", Result = 1 },
+                                                new CustomMessageBoxWindow.Button() { Label = "Yes to All", Result = 2 },
+                                                new CustomMessageBoxWindow.Button() { Label = "No", Result = 3 }
+                                            }, this);
+                                await actions.Show();
+
+                                int result = (int)actions.ViewModel.Result;
+
+                                if (result == 2)
+                                {
+                                    overwriteAll = true;
+                                }
+
+                                if (result == 3)
                                 {
                                     continue;
                                 }
@@ -280,9 +301,27 @@ namespace DanTheMan827.Modulation.Views
 
                                 if (entries.ContainsKey($"{songPath}{songName}.mid") && entries.ContainsKey($"{songPath}{songName}.mogg"))
                                 {
-                                    if (Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
+                                    if (overwriteAll == false && Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
                                     {
-                                        if (MessageBox.Show($"The song \"{songName}\" already exists, do you want to overwrite?", "Song Already Exists", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                                        var actions = CustomMessageBoxWindow.GetActions(
+                                            $"The song \"{songName}\" already exists, do you want to overwrite?",
+                                            "Song Already Exists",
+                                            new CustomMessageBoxWindow.Button[]
+                                            {
+                                                new CustomMessageBoxWindow.Button() { Label = "Yes", Result = 1 },
+                                                new CustomMessageBoxWindow.Button() { Label = "Yes to All", Result = 2 },
+                                                new CustomMessageBoxWindow.Button() { Label = "No", Result = 3 }
+                                            }, this);
+                                        await actions.Show();
+
+                                        int result = (int)actions.ViewModel.Result;
+
+                                        if (result == 2)
+                                        {
+                                            overwriteAll = true;
+                                        }
+
+                                        if (result == 3)
                                         {
                                             continue;
                                         }
@@ -334,10 +373,32 @@ namespace DanTheMan827.Modulation.Views
                 }
             }
         }
-
-        private void Save_Click(object sender, RoutedEventArgs e)
+        private async Task doSave(bool closeAfter = false)
         {
-            this.ChangesMade = false;
+            try
+            {
+                var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
+                _ = progActions.Show();
+
+                await this.modulate.Pack(this.openedInfo.SourcePath);
+
+                await progActions.Close();
+                this.ChangesMade = false;
+
+                if (closeAfter)
+                {
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void Save_Click(object sender, RoutedEventArgs e)
+        {
+            await this.doSave();
         }
 
         private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -358,21 +419,7 @@ namespace DanTheMan827.Modulation.Views
             if (result == MessageBoxResult.Yes)
             {
                 e.Cancel = true;
-                try
-                {
-                    var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
-                    _ = progActions.Show();
-
-                    await this.modulate.Pack(this.openedInfo.SourcePath);
-
-                    await progActions.Close();
-                    this.ChangesMade = false;
-                    this.Close();
-                }
-                catch (Exception ex)
-                {
-                    _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                await this.doSave(true);
             }
         }
 
@@ -478,6 +525,35 @@ namespace DanTheMan827.Modulation.Views
             {
                 _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void UnlockEverything_Click(object sender, RoutedEventArgs e)
+        {
+            string platform = this.openedInfo.Console == UnpackedType.PS3 ? "ps3" : "ps4";
+            string configPath = Path.Join(this.openedInfo.UnpackedPath, platform, "config", $"amp_config.dta_dta_{platform}");
+            var input = File.OpenRead(configPath);
+            bool encrypted = false;
+            int version = DTX.DtbVersion(input, ref encrypted);
+            input.Position = 0;
+            var dtx = DTX.FromDtb(input);
+            input.Dispose();
+
+            var unlocks = dtx.FindByName("db")?.OfType<DataArray>()?.FirstOrDefault()?.FindByName("campaign")?.OfType<DataArray>()?.FirstOrDefault();
+
+            if (unlocks != null)
+            {
+                foreach (var unlock in unlocks.Children.OfType<DataArray>())
+                {
+                    unlock.Children[0] = DTX.FromDtaString("beat_num").Children[0];
+                    unlock.Children[1] = DTX.FromDtaString("0").Children[0];
+                    unlock.Children[2] = DTX.FromDtaString("kUnlockArena").Children[0];
+                }
+            }
+
+            using var output = File.Create(configPath);
+            _ = DTX.ToDtb(dtx, output, version, encrypted);
+
+            this.ChangesMade = true;
         }
     }
 }

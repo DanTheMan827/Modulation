@@ -1,0 +1,51 @@
+﻿<Window x:Class="WPFCustomMessageBox.CustomMessageBoxWindow"
+        x:ClassModifier="public"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:VM="clr-namespace:DanTheMan827.Modulation.ViewModels"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="SingleBorderWindow"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize" SizeToContent="WidthAndHeight"
+        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" UseLayoutRounding="True"
+        Loaded="Window_Loaded"
+        Title="{Binding Caption.Value}" MinHeight="155" MaxWidth="470" MinWidth="154">
+    <Window.DataContext>
+        <VM:CustomMessageBoxWindowViewModel x:Name="ViewModel" />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="White" MinHeight="69">
+            <DockPanel>
+                <TextBlock Text="{Binding Message.Value}" TextWrapping="Wrap" MaxWidth="500" Width="Auto"
+                       VerticalAlignment="Center" Margin="12,20,41,15" />
+            </DockPanel>
+        </Grid>
+        <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MinHeight="49">
+            <DockPanel Margin="5,0">
+
+                <ItemsControl ItemsSource="{Binding Buttons}" HorizontalAlignment="Right">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+
+                            <Button Tag="{Binding Result}" Margin="3,0,5,0" Height="26" 
+                            Click="Button_Click">
+                                <Label Padding="0" Margin="20,0">
+                                    <TextBlock Text="{Binding Label}" />
+                                </Label>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DockPanel>
+        </Grid>
+    </Grid>
+</Window>

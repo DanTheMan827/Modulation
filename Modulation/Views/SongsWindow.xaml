@@ -30,6 +30,7 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_Pack All Songs" Click="PackAllSongs_Click" />
                 <MenuItem Header="_Re-Add All Songs" ToolTip="Rebuild and re-add all custom songs." Click="ReAddSongs_Click" />
+                <MenuItem Header="Unlock Everything" ToolTip="Unlocks everything in the game" Click="UnlockEverything_Click"/>
                 <Separator />
                 <MenuItem Header="_Save" Click="Save_Click" Visibility="{Binding SaveVisibility.Value}" />
                 <MenuItem Header="_Save As" Click="SaveAs_Click" />
