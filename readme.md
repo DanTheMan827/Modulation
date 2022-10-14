@@ -14,5 +14,7 @@ To pack the loose files, you can use File > Save As.
 
 ## Attributions
 - [Modulate by Adam Clixby](https://github.com/adamclixby/modulate/).
-- [DtxCs by Maxton](https://github.com/maxton/DtxCS)
+- [DtxCs by Maxton](https://github.com/maxton/DtxCS) and [Emma](https://github.com/InvoxiPlayGames/DtxCS)
+- [SharpCompress by Adam Hathcock](https://github.com/adamhathcock/sharpcompress)
+- [WPFCustomMessageBox by Evan Wondrasek](https://github.com/evanwon/WPFCustomMessageBox)
 - [Icon by Vecteezy](https://www.vecteezy.com/vector-art/583248-sound-wave-ilustration-logo-vector-icon-template)
