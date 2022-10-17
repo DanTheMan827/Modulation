@@ -61,6 +61,28 @@ namespace DanTheMan827.Modulation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to (campaign 
+        ///	(beat_num 0 kUnlockArena World1) 
+        ///	(beat_num 0 kUnlockArena World2) 
+        ///	(beat_num 0 kUnlockArena World3) 
+        ///	(beat_num 0 kUnlockArena PERFECTBRAIN) 
+        ///	(beat_num 0 kUnlockArena WETWARE) 
+        ///	(play_num_qp 1 kUnlockPowerup autocatcher) 
+        ///	(play_num 2 kUnlockExtraSong PHANTOMS) 
+        ///	(beat_num 0 kUnlockArena DREAMER) 
+        ///	(beat_num 0 kUnlockArena RECESSION) 
+        ///	(beat_num 0 kUnlockArena DONOTRETREAT) 
+        ///	(beat_num 14 kUnlockFreQMode freq_mode) 
+        ///	(beat_campaign (3 15 1) kUnlockSuperSkill skill_nightmare) 
+        ///	( [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string default_unlocks {
+            get {
+                return ResourceManager.GetString("default_unlocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;html&gt;
         ///    &lt;head&gt;
         ///        &lt;title&gt;Modulation Readme&lt;/title&gt;

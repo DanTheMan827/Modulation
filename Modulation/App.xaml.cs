@@ -1,4 +1,5 @@
 ﻿using DanTheMan827.ModulateDotNet;
+using DanTheMan827.Modulation.Tweaks;
 using DanTheMan827.Modulation.Views;
 using DanTheMan827.TempFolders;
 using Microsoft.Win32;
@@ -89,8 +90,11 @@ namespace DanTheMan827.Modulation
                 }
                 mainWindow.ViewModel.Modulate = new Modulate(OpenedInfo);
                 mainWindow.ViewModel.SaveVisibility.Value = OpenedInfo!.FromUnpacked ? Visibility.Collapsed : Visibility.Visible;
+                mainWindow.ViewModel.EverythingUnlocked.Value = new UnlockEverything(OpenedInfo).GetState();
+                mainWindow.ViewModel.FpsUnlimited.Value = new FpsUnlimiter(OpenedInfo).GetState();
                 Application.Current.MainWindow = mainWindow;
                 await mainWindow.UpdateSongs();
+
                 mainWindow.Show();
             }
             catch (TaskCanceledException)

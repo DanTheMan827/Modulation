@@ -29,10 +29,25 @@ namespace DanTheMan827.ModulateDotNet
         /// </summary>
         public string UnpackLog { get; internal set; }
 
+        private UnpackedType _Console { get; set; }
+
         /// <summary>
         /// What console the unpacked data belongs to.
         /// </summary>
-        public UnpackedType Console { get; internal set; }
+        public UnpackedType Console
+        {
+            get => this._Console;
+            set
+            {
+                this._Console = value;
+                this.ConsoleLabel = value == UnpackedType.PS3 ? "ps3" : "ps4";
+            }
+        }
+
+        /// <summary>
+        /// A label of the console type (ps3 or ps4)
+        /// </summary>
+        public string ConsoleLabel { get; internal set; }
 
         /// <summary>
         /// The exit code from Modulate.exe

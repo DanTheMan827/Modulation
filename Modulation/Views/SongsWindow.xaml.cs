@@ -1,8 +1,8 @@
 ﻿using DanTheMan827.ModulateDotNet;
 using DanTheMan827.Modulation.Extensions;
+using DanTheMan827.Modulation.Tweaks;
 using DanTheMan827.TempFolders;
 using DtxCS;
-using DtxCS.DataTypes;
 using Microsoft.Win32;
 using SharpCompress.Archives;
 using System;
@@ -529,29 +529,20 @@ namespace DanTheMan827.Modulation.Views
 
         private void UnlockEverything_Click(object sender, RoutedEventArgs e)
         {
-            string platform = this.openedInfo.Console == UnpackedType.PS3 ? "ps3" : "ps4";
-            string configPath = Path.Join(this.openedInfo.UnpackedPath, platform, "config", $"amp_config.dta_dta_{platform}");
-            var input = File.OpenRead(configPath);
-            bool encrypted = false;
-            int version = DTX.DtbVersion(input, ref encrypted);
-            input.Position = 0;
-            var dtx = DTX.FromDtb(input);
-            input.Dispose();
+            var tweak = new UnlockEverything(this.openedInfo);
+            bool newState = !this.ViewModel.EverythingUnlocked.Value;
+            _ = tweak.SetState(newState);
+            this.ViewModel.EverythingUnlocked.Value = newState;
 
-            var unlocks = dtx.FindByName("db")?.OfType<DataArray>()?.FirstOrDefault()?.FindByName("campaign")?.OfType<DataArray>()?.FirstOrDefault();
+            this.ChangesMade = true;
+        }
 
-            if (unlocks != null)
-            {
-                foreach (var unlock in unlocks.Children.OfType<DataArray>())
-                {
-                    unlock.Children[0] = DTX.FromDtaString("beat_num").Children[0];
-                    unlock.Children[1] = DTX.FromDtaString("0").Children[0];
-                    unlock.Children[2] = DTX.FromDtaString("kUnlockArena").Children[0];
-                }
-            }
-
-            using var output = File.Create(configPath);
-            _ = DTX.ToDtb(dtx, output, version, encrypted);
+        private void UnlockFPS_Click(object sender, RoutedEventArgs e)
+        {
+            var tweak = new FpsUnlimiter(this.openedInfo);
+            bool newState = !this.ViewModel.FpsUnlimited.Value;
+            _ = tweak.SetState(newState);
+            this.ViewModel.FpsUnlimited.Value = newState;
 
             this.ChangesMade = true;
         }

@@ -10,6 +10,8 @@ namespace DanTheMan827.Modulation.ViewModels
         public ObservableProperty<Visibility> SaveVisibility { get; set; } = new(Visibility.Collapsed);
         public ObservableCollection<Song> Songs { get; set; } = new();
         public ObservableProperty<bool> ShowSongs { get; set; } = new(false);
+        public ObservableProperty<bool> FpsUnlimited { get; set; } = new(false);
+        public ObservableProperty<bool> EverythingUnlocked { get; set; } = new(false);
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public SongsWindowViewModel()
