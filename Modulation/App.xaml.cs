@@ -45,15 +45,14 @@ namespace DanTheMan827.Modulation
                 };
 
                 if (ofd.ShowDialog() == true)
-                    if (ofd.ShowDialog() == true)
-                    {
-                        var info = new FileInfo(ofd.FileName);
+                {
+                    var info = new FileInfo(ofd.FileName);
 
-                        if (info.Exists && (info.Name == "main_ps3.hdr" || info.Name == "main_ps4.hdr"))
-                        {
-                            openedPath = info.Directory?.FullName;
-                        }
+                    if (info.Exists && (info.Name == "main_ps3.hdr" || info.Name == "main_ps4.hdr"))
+                    {
+                        openedPath = info.Directory?.FullName;
                     }
+                }
             }
 
             if (openedPath == null)
