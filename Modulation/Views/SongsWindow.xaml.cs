@@ -176,6 +176,8 @@ namespace DanTheMan827.Modulation.Views
                     var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
                     progActions.ViewModel.IsIndeterminate.Value = false;
                     _ = progActions.Show();
+
+                    HelperMethods.DeleteArk(fi.FullName);
                     await Ark.PackAsync(openedInfo.UnpackedPath, fi.FullName, (message, current, max) =>
                     {
                         progActions.ViewModel.Maximum.Value = max;
@@ -383,6 +385,7 @@ namespace DanTheMan827.Modulation.Views
                 progActions.ViewModel.IsIndeterminate.Value = false;
                 _ = progActions.Show();
 
+                HelperMethods.DeleteArk(openedInfo.HeaderPath);
                 await Ark.PackAsync(openedInfo.UnpackedPath, openedInfo.HeaderPath, (message, current, max) =>
                 {
                     progActions.ViewModel.Maximum.Value = max;
