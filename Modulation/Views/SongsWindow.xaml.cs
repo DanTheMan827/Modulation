@@ -561,6 +561,8 @@ namespace DanTheMan827.Modulation.Views
                 var status = tag.ToggleTweak();
 
                 MessageBox.Show(this, status, "Tweak Updated");
+
+                this.ChangesMade = true;
             }
         }
     }
