@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DanTheMan827.Modulation.Extensions
 {
-    public static class IEnumerable_WithIndex
+    internal static partial class Extensions
     {
         public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> source)
         {

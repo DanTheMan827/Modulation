@@ -1,8 +1,10 @@
-﻿using DanTheMan827.ModulateDotNet;
+﻿using AmpHelper;
+using AmpHelper.Enums;
+using AmpHelper.Types;
+using DanTheMan827.ModulateDotNet;
 using DanTheMan827.Modulation.Extensions;
-using DanTheMan827.Modulation.Tweaks;
+using DanTheMan827.Modulation.Helpers;
 using DanTheMan827.TempFolders;
-using DtxCS;
 using Microsoft.Win32;
 using SharpCompress.Archives;
 using System;
@@ -22,8 +24,7 @@ namespace DanTheMan827.Modulation.Views
     /// </summary>
     public partial class SongsWindow : Window
     {
-        private UnpackedInfo openedInfo => this.ViewModel.Modulate.UnpackedInfo;
-        private Modulate modulate => this.ViewModel.Modulate;
+        private UnpackedInfo openedInfo => ViewModel.OpenedInfo;
         public bool ChangesMade
         { get; set; } = false;
         private bool promptSave => this.openedInfo?.FromUnpacked == false && this.ChangesMade == true;
@@ -44,16 +45,14 @@ namespace DanTheMan827.Modulation.Views
         {
             this.ViewModel.Songs.Clear();
 
-            var songs = (await this.modulate.ListSongs()).Where(s => !Modulate.baseSongs.Contains(s.SongFolder));
+            var songs = new MoggSong[] { };
 
-            foreach (var song in songs)
+            await Task.Run(() =>
             {
-                using var dtxStream = File.OpenRead(Path.Combine(this.openedInfo.SongsPath, song.SongFolder, $"{song.SongFolder}.moggsong"));
-                var root = DTX.FromDtaStream(dtxStream);
-                song.MoggSong = new MoggSong().LoadDta(root);
-            }
+                songs = Song.GetSongs(new DirectoryInfo(openedInfo.UnpackedPath)).Where(e => !e.Special && !e.BaseSong).ToArray();
+            });
 
-            foreach (var song in songs.OrderBy(s => $"{s.CleanArtist}{s.CleanName}"))
+            foreach (var song in songs.OrderBy(s => $"{s.CleanArtist()}{s.CleanName()}"))
             {
                 this.ViewModel.Songs.Add(song);
             }
@@ -68,23 +67,21 @@ namespace DanTheMan827.Modulation.Views
         {
             if (App.IsDesign)
             {
-                this.ViewModel.Songs.Add(new Song()
+                this.ViewModel.Songs.Add(new MoggSong()
                 {
-                    ID = "MYSONG",
-                    Name = "My Song",
-                    Path = "../Songs/mysong/mysong.moggsong",
-                    Arena = "World1",
-                    Type = "kExtraSong",
-                    UnlockType = "play_num",
-                    UnlockValue = "0"
+                    Title = "My Song",
+                    MoggPath = "../Songs/mysong/mysong.moggsong",
+                    ArenaPath = "World1",
+                    UnlockRequirement = UnlockRequirement.PlayCount
                 });
+
                 this.ViewModel.ShowSongs.Value = true;
             }
         }
 
         private async void ButtonPack_Click(object sender, RoutedEventArgs e)
         {
-            var song = (Song?)((Button?)sender)?.Tag;
+            var song = (MoggSong?)((Button?)sender)?.Tag;
             if (song == null || this.openedInfo == null)
             {
                 return;
@@ -93,7 +90,7 @@ namespace DanTheMan827.Modulation.Views
             var saveDialog = new SaveFileDialog()
             {
                 Filter = $"Zip Files (*.zip)|*.zip",
-                FileName = $"{song.CleanArtist} - {song.CleanName}.zip".ReplaceInvalidFilenameChars(),
+                FileName = $"{song.CleanArtist()} - {song.CleanName()}.zip".ReplaceInvalidFilenameChars(),
                 CheckPathExists = true
             };
 
@@ -107,7 +104,7 @@ namespace DanTheMan827.Modulation.Views
 
                     _ = progActions.Show();
 
-                    await this.modulate.ArchiveSong(file, Readme.GenerateReadme(song), null, song.SongFolder);
+                    await HelperMethods.ArchiveSong(openedInfo.UnpackedPath, file, Readme.GenerateReadme(song), null, song.ID);
 
                     await progActions.Close();
                 }
@@ -120,20 +117,24 @@ namespace DanTheMan827.Modulation.Views
 
         private async void ButtonDelete_Click(object sender, RoutedEventArgs e)
         {
-            var song = (Song?)((Button?)sender)?.Tag;
+            var song = (MoggSong?)((Button?)sender)?.Tag;
             if (song == null || this.openedInfo == null)
             {
                 return;
             }
 
-            string? songPath = Path.Combine(this.openedInfo.SongsPath, song.SongFolder);
+            string? songPath = Path.Combine(this.openedInfo.SongsPath, song.ID);
 
-            var progActions = ProgressWindow.GetActions("Deleting Song", "Deleting: " + song.SongFolder, this);
+            var progActions = ProgressWindow.GetActions("Deleting Song", "Deleting: " + song.ID, this);
             _ = progActions.Show();
             this.ChangesMade = true;
             try
             {
-                await this.modulate.RemoveSong(song.SongFolder);
+                await Task.Run(() =>
+                {
+                    Song.RemoveSong(openedInfo.UnpackedPath, song.ID, true);
+                });
+
                 _ = this.ViewModel.Songs.Remove(song);
             }
             catch (Exception ex)
@@ -181,9 +182,16 @@ namespace DanTheMan827.Modulation.Views
                 try
                 {
                     var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
+                    progActions.ViewModel.IsIndeterminate.Value = false;
                     _ = progActions.Show();
-
-                    await this.modulate.Pack(fi.Directory.FullName);
+                    await Task.Run(() =>
+                    {
+                        Ark.Pack(openedInfo.UnpackedPath, fi.FullName, (message, current, max) =>
+                        {
+                            progActions.ViewModel.Maximum.Value = max;
+                            progActions.ViewModel.Value.Value = current;
+                        });
+                    });
 
                     await progActions.Close();
                 }
@@ -257,7 +265,11 @@ namespace DanTheMan827.Modulation.Views
                             _ = (progActions?.Show());
                             this.ChangesMade = true;
 
-                            await this.modulate.AddSong(songPath, songName, true);
+                            await Task.Run(() =>
+                            {
+                                Song.ImportSong(openedInfo.UnpackedPath, file, true);
+                            });
+
                             addedSong = true;
                         }
                         catch (Exception ex)
@@ -339,7 +351,11 @@ namespace DanTheMan827.Modulation.Views
                                     entries[$"{songPath}{songName}.mogg"].WriteToDirectory(unpackedSong);
                                     entries[msFile].WriteToDirectory(unpackedSong);
 
-                                    await this.modulate.AddSong(unpackedSong, songName, true);
+                                    await Task.Run(() =>
+                                    {
+                                        Song.ImportSong(openedInfo.UnpackedPath, unpackedSong, true);
+                                    });
+
                                     addedSong = true;
 
                                 }
@@ -378,9 +394,17 @@ namespace DanTheMan827.Modulation.Views
             try
             {
                 var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
+                progActions.ViewModel.IsIndeterminate.Value = false;
                 _ = progActions.Show();
 
-                await this.modulate.Pack(this.openedInfo.SourcePath);
+                await Task.Run(() =>
+                {
+                    Ark.Pack(openedInfo.UnpackedPath, openedInfo.HeaderPath, (message, current, max) =>
+                    {
+                        progActions.ViewModel.Maximum.Value = max;
+                        progActions.ViewModel.Value.Value = current;
+                    });
+                });
 
                 await progActions.Close();
                 this.ChangesMade = false;
@@ -446,11 +470,11 @@ namespace DanTheMan827.Modulation.Views
 
                     try
                     {
-                        await this.modulate.ArchiveSong(file, Readme.GenerateReadme(this.ViewModel.Songs.ToArray()), (value, max) =>
+                        await HelperMethods.ArchiveSong(openedInfo.UnpackedPath, file, Readme.GenerateReadme(this.ViewModel.Songs.ToArray()), (value, max) =>
                         {
                             progActions.ViewModel.Value.Value = value;
                             progActions.ViewModel.Maximum.Value = max;
-                        }, this.ViewModel.Songs.Select(s => s.SongFolder).ToArray());
+                        }, ViewModel.Songs.Select(e => e.ID).ToArray());
                     }
                     catch (Exception ex)
                     {
@@ -507,15 +531,23 @@ namespace DanTheMan827.Modulation.Views
             try
             {
                 var progActions = ProgressWindow.GetActions("Processing", "Processing, please wait.", this);
+                progActions.ViewModel.IsIndeterminate.Value = false;
                 _ = progActions.Show();
 
-                foreach (var song in this.ViewModel.Songs)
+                await Task.Run(() =>
                 {
-                    await this.modulate.BuildSong(song.SongFolder);
-                    await this.modulate.RemoveSong(song.SongFolder, false);
-                }
+                    var songNames = Song.GetSongs(openedInfo.UnpackedPath).Where(e => !e.Special && !e.BaseSong).Select(e => e.ID).ToArray();
+                    var consoleType = openedInfo.Console == UnpackedType.PS3 ? ConsoleType.PS3 : ConsoleType.PS4;
 
-                await this.modulate.AutoAdd();
+                    progActions.ViewModel.Maximum.Value = songNames.Length * 2 + 2;
+
+                    Song.AddSong(new DirectoryInfo(openedInfo.UnpackedPath), songNames, consoleType, (message, current, max) =>
+                    {
+                        progActions.ViewModel.Maximum.Value = max;
+                        progActions.ViewModel.Value.Value = current;
+                    });
+                });
+
                 await this.UpdateSongs();
 
                 await progActions.Close();
@@ -527,24 +559,26 @@ namespace DanTheMan827.Modulation.Views
             }
         }
 
-        private void UnlockEverything_Click(object sender, RoutedEventArgs e)
+        internal void Tweak_Click(object sender, RoutedEventArgs e)
         {
-            var tweak = new UnlockEverything(this.openedInfo);
-            bool newState = !this.ViewModel.EverythingUnlocked.Value;
-            _ = tweak.SetState(newState);
-            this.ViewModel.EverythingUnlocked.Value = newState;
+            TweakWrapper? tag = null;
 
-            this.ChangesMade = true;
-        }
+            if (typeof(FrameworkContentElement).IsAssignableFrom(sender.GetType()))
+            {
+                tag = ((FrameworkContentElement)sender).Tag as TweakWrapper;
+            }
 
-        private void UnlockFPS_Click(object sender, RoutedEventArgs e)
-        {
-            var tweak = new FpsUnlimiter(this.openedInfo);
-            bool newState = !this.ViewModel.FpsUnlimited.Value;
-            _ = tweak.SetState(newState);
-            this.ViewModel.FpsUnlimited.Value = newState;
+            if (typeof(FrameworkElement).IsAssignableFrom(sender.GetType()))
+            {
+                tag = ((FrameworkElement)sender).Tag as TweakWrapper;
+            }
 
-            this.ChangesMade = true;
+            if (tag != null)
+            {
+                var status = tag.ToggleTweak();
+
+                MessageBox.Show(this, status, "Tweak Updated");
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DanTheMan827.Modulation.Extensions
 {
-    internal static class DataArray_FindByName
+    internal static partial class Extensions
     {
         public static IEnumerable<DataNode> FindByName(this DataArray dtx, string name)
         {

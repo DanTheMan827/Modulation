@@ -16,6 +16,7 @@
         Closing="Window_Closing">
     <Window.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:StringCleanConverter x:Key="StringCleanConverter"/>
     </Window.Resources>
     <Window.DataContext>
         <VM:SongsWindowViewModel x:Name="ViewModel" />
@@ -34,9 +35,8 @@
                 <MenuItem Header="_Save" Click="Save_Click" Visibility="{Binding SaveVisibility.Value}" />
                 <MenuItem Header="_Save As" Click="SaveAs_Click" />
             </MenuItem>
-            <MenuItem Header="Tweaks">
-                <MenuItem Header="Unlock Everything" ToolTip="Unlocks everything in the game" Click="UnlockEverything_Click" IsChecked="{Binding EverythingUnlocked.Value}"/>
-                <MenuItem Header="No FPS Limit" ToolTip="Remove the FPS limit" Click="UnlockFPS_Click" IsChecked="{Binding FpsUnlimited.Value}"/>
+            <MenuItem Header="Tweaks" x:Name="TweaksMenu" Visibility="Collapsed">
+                
             </MenuItem>
             <MenuItem 
                 Padding="0"
@@ -85,30 +85,30 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Orientation="Vertical" Grid.Column="0" MaxWidth="{Binding}" Margin="5">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding CleanArtist}" FontWeight="Bold" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="{Binding Artist, Converter={StaticResource StringCleanConverter}}" FontWeight="Bold" HorizontalAlignment="Stretch" />
                                         <TextBlock Text=" - " FontWeight="Bold" HorizontalAlignment="Stretch" />
-                                        <TextBlock Text="{Binding CleanName}" FontWeight="Bold" HorizontalAlignment="Stretch" />
-                                        <TextBlock Visibility="{Binding HasDemoVideo, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" FontWeight="Bold"> - 
-                                            <Hyperlink Click="OpenBrowser" Tag="{Binding MoggSong.DemoVideo}">Demo Video</Hyperlink>
+                                        <TextBlock Text="{Binding Title, Converter={StaticResource StringCleanConverter}}" FontWeight="Bold" HorizontalAlignment="Stretch" />
+                                        <TextBlock Visibility="{Binding DemoVideo, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" FontWeight="Bold"> - 
+                                            <Hyperlink Click="OpenBrowser" Tag="{Binding DemoVideo}">Demo Video</Hyperlink>
                                         </TextBlock>
                                     </StackPanel>
                                     
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="ID: " FontWeight="Bold" HorizontalAlignment="Stretch" />
-                                        <TextBlock Text="{Binding SongFolder}" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="{Binding ID}" HorizontalAlignment="Stretch" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="BPM: " FontWeight="Bold" HorizontalAlignment="Stretch" />
-                                        <TextBlock Text="{Binding MoggSong.Bpm}" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="{Binding Bpm}" HorizontalAlignment="Stretch" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding MoggSong.Charter, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Charter, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
                                         <TextBlock Text="Charter: " FontWeight="Bold" HorizontalAlignment="Stretch" />
-                                        <TextBlock Text="{Binding MoggSong.Charter}" HorizontalAlignment="Stretch" />
+                                        <TextBlock Text="{Binding Charter}" HorizontalAlignment="Stretch" />
                                     </StackPanel>
                                     <TextBlock 
                                         Margin="0 6 0 0" 
-                                        Visibility="{Binding MoggSong.CleanDescription, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}"
-                                        Text="{Binding MoggSong.CleanDescription}" 
+                                        Visibility="{Binding Description, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}"
+                                        Text="{Binding Description, Converter={StaticResource StringCleanConverter}}" 
                                         HorizontalAlignment="Stretch" />
                                 </StackPanel>
                                 <Button Margin="2" Grid.Column="1" Tag="{Binding }" Width="48" Click="ButtonPack_Click">Pack</Button>

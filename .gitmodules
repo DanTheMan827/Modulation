@@ -1,3 +1,3 @@
-[submodule "DtxCS"]
-	path = DtxCS
-	url = https://github.com/InvoxiPlayGames/DtxCS.git
+[submodule "AmpHelper"]
+	path = AmpHelper
+	url = https://github.com/hmxmilohax/AmpHelper.git

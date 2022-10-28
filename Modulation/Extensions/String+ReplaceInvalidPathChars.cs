@@ -2,7 +2,7 @@
 
 namespace DanTheMan827.Modulation.Extensions
 {
-    internal static class String_ReplaceInvalidPathChars
+    internal static partial class Extensions
     {
         internal static string ReplaceInvalidPathChars(this string input)
         {

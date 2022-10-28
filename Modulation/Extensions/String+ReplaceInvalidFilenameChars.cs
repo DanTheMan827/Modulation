@@ -2,7 +2,7 @@
 
 namespace DanTheMan827.Modulation.Extensions
 {
-    internal static class String_ReplaceInvalidFilenameCharsExtension
+    internal static partial class Extensions
     {
         internal static string ReplaceInvalidFilenameChars(this string input)
         {

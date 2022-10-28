@@ -1,4 +1,6 @@
-﻿using DanTheMan827.ModulateDotNet;
+﻿using AmpHelper.Enums;
+using AmpHelper.Types;
+using DanTheMan827.ModulateDotNet;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -6,12 +8,13 @@ namespace DanTheMan827.Modulation.ViewModels
 {
     public class SongsWindowViewModel
     {
-        public Modulate Modulate { get; set; }
         public ObservableProperty<Visibility> SaveVisibility { get; set; } = new(Visibility.Collapsed);
-        public ObservableCollection<Song> Songs { get; set; } = new();
+        public ObservableCollection<MoggSong> Songs { get; set; } = new();
+        public ObservableCollection<TweakWrapper> TweakWrappers { get; set; } = new();
         public ObservableProperty<bool> ShowSongs { get; set; } = new(false);
         public ObservableProperty<bool> FpsUnlimited { get; set; } = new(false);
         public ObservableProperty<bool> EverythingUnlocked { get; set; } = new(false);
+        public UnpackedInfo OpenedInfo { get; internal set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public SongsWindowViewModel()
@@ -19,15 +22,12 @@ namespace DanTheMan827.Modulation.ViewModels
         {
             if (App.IsDesign)
             {
-                this.Songs.Add(new Song()
+                this.Songs.Add(new MoggSong()
                 {
-                    ID = "MYSONG",
-                    Name = "My Song",
-                    Path = "../Songs/mysong/mysong.moggsong",
-                    Arena = "World1",
-                    Type = "kExtraSong",
-                    UnlockType = "play_num",
-                    UnlockValue = "0"
+                    Title = "My Song",
+                    MoggPath = "../Songs/mysong/mysong.moggsong",
+                    ArenaPath = "World1",
+                    UnlockRequirement = UnlockRequirement.PlayCount
                 });
             }
         }
