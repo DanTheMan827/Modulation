@@ -45,12 +45,7 @@ namespace DanTheMan827.Modulation.Views
         {
             this.ViewModel.Songs.Clear();
 
-            var songs = new MoggSong[] { };
-
-            await Task.Run(() =>
-            {
-                songs = Song.GetSongs(new DirectoryInfo(openedInfo.UnpackedPath)).Where(e => !e.Special && !e.BaseSong).ToArray();
-            });
+            var songs = (await Song.GetSongsAsync(openedInfo.UnpackedPath)).Where(e => !e.Special && !e.BaseSong).ToArray();
 
             foreach (var song in songs.OrderBy(s => $"{s.CleanArtist()}{s.CleanName()}"))
             {
@@ -111,7 +106,7 @@ namespace DanTheMan827.Modulation.Views
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -130,10 +125,7 @@ namespace DanTheMan827.Modulation.Views
             this.ChangesMade = true;
             try
             {
-                await Task.Run(() =>
-                {
-                    Song.RemoveSong(openedInfo.UnpackedPath, song.ID, true);
-                });
+                await Song.RemoveSongAsync(openedInfo.UnpackedPath, song.ID, true);
 
                 _ = this.ViewModel.Songs.Remove(song);
             }
@@ -141,7 +133,7 @@ namespace DanTheMan827.Modulation.Views
             {
                 await progActions.Close();
                 progActions = null;
-                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -184,20 +176,17 @@ namespace DanTheMan827.Modulation.Views
                     var progActions = ProgressWindow.GetActions("Packing", "Packing, please wait.", this);
                     progActions.ViewModel.IsIndeterminate.Value = false;
                     _ = progActions.Show();
-                    await Task.Run(() =>
+                    await Ark.PackAsync(openedInfo.UnpackedPath, fi.FullName, (message, current, max) =>
                     {
-                        Ark.Pack(openedInfo.UnpackedPath, fi.FullName, (message, current, max) =>
-                        {
-                            progActions.ViewModel.Maximum.Value = max;
-                            progActions.ViewModel.Value.Value = current;
-                        });
+                        progActions.ViewModel.Maximum.Value = max;
+                        progActions.ViewModel.Value.Value = current;
                     });
 
                     await progActions.Close();
                 }
                 catch (Exception ex)
                 {
-                    _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -216,177 +205,174 @@ namespace DanTheMan827.Modulation.Views
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                bool addedSong = false;
-
                 string[] files = ((string[])e.Data.GetData(DataFormats.FileDrop)).Where(file => File.Exists(file)).ToArray();
-                bool overwriteAll = false;
 
-                foreach (string? file in files)
+                _ = ImportFiles(files);
+            }
+        }
+
+        private void ImportSongs_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog()
+            {
+                Filter = "Supported files (*.moggsong, *.zip, *.7z, *.rar)|*.moggsong;*.zip;*.7z;*.rar",
+                Multiselect = true
+            };
+
+            if (ofd.ShowDialog() == true)
+            {
+                _ = ImportFiles(ofd.FileNames);
+            }
+        }
+
+        private async Task ImportFiles(string[] files)
+        {
+            bool addedSong = false;
+            bool overwriteAll = false;
+
+            var progActions = ProgressWindow.GetActions("Adding Song", "", this);
+            _ = progActions.Show();
+            foreach (string? file in files.OrderBy(e => e))
+            {
+                if (file.EndsWith(".moggsong"))
                 {
-
-
-                    if (file.EndsWith(".moggsong"))
-                    {
-                        ProgressWindow.ShowCloseActions? progActions = null;
-
-                        try
-                        {
-                            string? songPath = file.Contains(Path.DirectorySeparatorChar) ? file[..(file.LastIndexOf(Path.DirectorySeparatorChar) + 1)] : "";
-                            string? songName = file.Split(Path.DirectorySeparatorChar).Last();
-                            songName = songName[..songName.LastIndexOf(".")];
-
-                            if (overwriteAll == false && Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
-                            {
-                                var actions = CustomMessageBoxWindow.GetActions(
-                                            $"The song \"{songName}\" already exists, do you want to overwrite?",
-                                            "Song Already Exists",
-                                            new CustomMessageBoxWindow.Button[]
-                                            {
-                                                new CustomMessageBoxWindow.Button() { Label = "Yes", Result = 1 },
-                                                new CustomMessageBoxWindow.Button() { Label = "Yes to All", Result = 2 },
-                                                new CustomMessageBoxWindow.Button() { Label = "No", Result = 3 }
-                                            }, this);
-                                await actions.Show();
-
-                                int result = (int)actions.ViewModel.Result;
-
-                                if (result == 2)
-                                {
-                                    overwriteAll = true;
-                                }
-
-                                if (result == 3)
-                                {
-                                    continue;
-                                }
-                            }
-
-                            progActions = ProgressWindow.GetActions("Adding Song", "Adding song: " + songName, this);
-                            _ = (progActions?.Show());
-                            this.ChangesMade = true;
-
-                            await Task.Run(() =>
-                            {
-                                Song.ImportSong(openedInfo.UnpackedPath, file, true);
-                            });
-
-                            addedSong = true;
-                        }
-                        catch (Exception ex)
-                        {
-                            if (progActions != null)
-                            {
-                                await progActions.Close();
-                            }
-                            _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                        finally
-                        {
-                            if (progActions != null)
-                            {
-                                await progActions.Close();
-                            }
-                        }
-
-                        continue;
-                    }
-
                     try
                     {
+                        string? songPath = file.Contains(Path.DirectorySeparatorChar) ? file[..(file.LastIndexOf(Path.DirectorySeparatorChar) + 1)] : "";
+                        string? songName = file.Split(Path.DirectorySeparatorChar).Last();
+                        songName = songName[..songName.LastIndexOf(".")];
 
-                        using var archive = ArchiveFactory.Open(file);
-                        var entries = new Dictionary<string, IArchiveEntry>();
+                        progActions.ViewModel.Message.Value = "Adding song: " + songName;
 
-                        foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
+
+                        if (overwriteAll == false && Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
                         {
-                            entries.Add(entry.Key, entry);
-                        }
-
-                        foreach (string? msFile in entries.Keys.Where(f => f.EndsWith(".moggsong")))
-                        {
-                            ProgressWindow.ShowCloseActions? progActions = null;
-                            try
-                            {
-                                string? songPath = msFile.Contains("/") ? msFile[..(msFile.LastIndexOf("/") + 1)] : "";
-                                string? songName = msFile.Split("/").Last();
-                                songName = songName[..songName.LastIndexOf(".")];
-
-                                if (entries.ContainsKey($"{songPath}{songName}.mid") && entries.ContainsKey($"{songPath}{songName}.mogg"))
-                                {
-                                    if (overwriteAll == false && Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
-                                    {
-                                        var actions = CustomMessageBoxWindow.GetActions(
-                                            $"The song \"{songName}\" already exists, do you want to overwrite?",
-                                            "Song Already Exists",
-                                            new CustomMessageBoxWindow.Button[]
-                                            {
+                            await progActions.Close();
+                            var actions = CustomMessageBoxWindow.GetActions(
+                                        $"The song \"{songName}\" already exists, do you want to overwrite?",
+                                        "Song Already Exists",
+                                        new CustomMessageBoxWindow.Button[]
+                                        {
                                                 new CustomMessageBoxWindow.Button() { Label = "Yes", Result = 1 },
                                                 new CustomMessageBoxWindow.Button() { Label = "Yes to All", Result = 2 },
                                                 new CustomMessageBoxWindow.Button() { Label = "No", Result = 3 }
-                                            }, this);
-                                        await actions.Show();
+                                        }, this);
+                            await actions.Show();
+                            _ = progActions.Show();
 
-                                        int result = (int)actions.ViewModel.Result;
+                            int result = (int)actions.ViewModel.Result;
 
-                                        if (result == 2)
+                            if (result == 2)
+                            {
+                                overwriteAll = true;
+                            }
+
+                            if (result == 3)
+                            {
+                                continue;
+                            }
+                        }
+
+                        this.ChangesMade = addedSong = true;
+
+                        await Song.ImportSongAsync(openedInfo.UnpackedPath, file, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        await progActions.Close();
+                        _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                    continue;
+                }
+
+                try
+                {
+
+                    using var archive = ArchiveFactory.Open(file);
+                    var entries = new Dictionary<string, IArchiveEntry>();
+
+                    foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
+                    {
+                        entries.Add(entry.Key, entry);
+                    }
+
+                    foreach (string? msFile in entries.Keys.Where(f => f.EndsWith(".moggsong")).OrderBy(f => f))
+                    {
+                        try
+                        {
+                            string? songPath = msFile.Contains("/") ? msFile[..(msFile.LastIndexOf("/") + 1)] : "";
+                            string? songName = msFile.Split("/").Last();
+                            songName = songName[..songName.LastIndexOf(".")];
+
+                            progActions.ViewModel.Message.Value = "Adding song: " + songName;
+
+                            if (entries.ContainsKey($"{songPath}{songName}.mid") && entries.ContainsKey($"{songPath}{songName}.mogg"))
+                            {
+                                if (overwriteAll == false && Directory.Exists(Path.Combine(this.openedInfo.SongsPath, songName)))
+                                {
+                                    await progActions.Close();
+                                    var actions = CustomMessageBoxWindow.GetActions(
+                                        $"The song \"{songName}\" already exists, do you want to overwrite?",
+                                        "Song Already Exists",
+                                        new CustomMessageBoxWindow.Button[]
                                         {
-                                            overwriteAll = true;
-                                        }
+                                                new CustomMessageBoxWindow.Button() { Label = "Yes", Result = 1 },
+                                                new CustomMessageBoxWindow.Button() { Label = "Yes to All", Result = 2 },
+                                                new CustomMessageBoxWindow.Button() { Label = "No", Result = 3 }
+                                        }, this);
+                                    await actions.Show();
 
-                                        if (result == 3)
-                                        {
-                                            continue;
-                                        }
+                                    int result = (int)actions.ViewModel.Result;
+
+                                    _ = progActions.Show();
+
+                                    if (result == 2)
+                                    {
+                                        overwriteAll = true;
                                     }
 
+                                    if (result == 3)
+                                    {
+                                        continue;
+                                    }
+                                }
+
+                                await Task.Run(() =>
+                                {
                                     using var temp = new EasyTempFolder(songName, App.SharedTemp);
-                                    string? unpackedSong = Path.Combine(temp, songName);
+                                    string unpackedSong = Path.Combine(temp, songName);
+
                                     _ = Directory.CreateDirectory(unpackedSong);
 
-                                    progActions = ProgressWindow.GetActions("Adding Song", "Adding song: " + songName, this);
-                                    _ = (progActions?.Show());
-                                    this.ChangesMade = true;
+                                    this.ChangesMade = addedSong = true;
 
                                     entries[$"{songPath}{songName}.mid"].WriteToDirectory(unpackedSong);
                                     entries[$"{songPath}{songName}.mogg"].WriteToDirectory(unpackedSong);
                                     entries[msFile].WriteToDirectory(unpackedSong);
 
-                                    await Task.Run(() =>
-                                    {
-                                        Song.ImportSong(openedInfo.UnpackedPath, unpackedSong, true);
-                                    });
-
-                                    addedSong = true;
-
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                if (progActions != null)
-                                {
-                                    await progActions.Close();
-                                }
-                                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
-                            finally
-                            {
-                                if (progActions != null)
-                                {
-                                    await progActions.Close();
-                                }
+                                    Song.ImportSongAsync(openedInfo.UnpackedPath, unpackedSong, true).Wait();
+                                });
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        catch (Exception ex)
+                        {
+                            await progActions.Close();
+                            _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
                 }
-
-                if (addedSong)
+                catch (Exception ex)
                 {
-                    await this.UpdateSongs();
+                    _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+
+            await progActions?.Close();
+
+            if (addedSong)
+            {
+                await this.UpdateSongs();
             }
         }
         private async Task doSave(bool closeAfter = false)
@@ -397,13 +383,10 @@ namespace DanTheMan827.Modulation.Views
                 progActions.ViewModel.IsIndeterminate.Value = false;
                 _ = progActions.Show();
 
-                await Task.Run(() =>
+                await Ark.PackAsync(openedInfo.UnpackedPath, openedInfo.HeaderPath, (message, current, max) =>
                 {
-                    Ark.Pack(openedInfo.UnpackedPath, openedInfo.HeaderPath, (message, current, max) =>
-                    {
-                        progActions.ViewModel.Maximum.Value = max;
-                        progActions.ViewModel.Value.Value = current;
-                    });
+                    progActions.ViewModel.Maximum.Value = max;
+                    progActions.ViewModel.Value.Value = current;
                 });
 
                 await progActions.Close();
@@ -416,7 +399,7 @@ namespace DanTheMan827.Modulation.Views
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -481,7 +464,7 @@ namespace DanTheMan827.Modulation.Views
                         await progActions.Close();
                         progActions = null;
 
-                        _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                     if (progActions != null)
@@ -492,7 +475,7 @@ namespace DanTheMan827.Modulation.Views
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -534,18 +517,15 @@ namespace DanTheMan827.Modulation.Views
                 progActions.ViewModel.IsIndeterminate.Value = false;
                 _ = progActions.Show();
 
-                await Task.Run(() =>
+                var songNames = (await Song.GetSongsAsync(openedInfo.UnpackedPath)).Where(e => !e.Special && !e.BaseSong).Select(e => e.ID).ToArray();
+                var consoleType = openedInfo.Console == UnpackedType.PS3 ? ConsoleType.PS3 : ConsoleType.PS4;
+
+                progActions.ViewModel.Maximum.Value = songNames.Length * 2 + 2;
+
+                await Song.AddSongAsync(openedInfo.UnpackedPath, songNames, consoleType, (message, current, max) =>
                 {
-                    var songNames = Song.GetSongs(openedInfo.UnpackedPath).Where(e => !e.Special && !e.BaseSong).Select(e => e.ID).ToArray();
-                    var consoleType = openedInfo.Console == UnpackedType.PS3 ? ConsoleType.PS3 : ConsoleType.PS4;
-
-                    progActions.ViewModel.Maximum.Value = songNames.Length * 2 + 2;
-
-                    Song.AddSong(new DirectoryInfo(openedInfo.UnpackedPath), songNames, consoleType, (message, current, max) =>
-                    {
-                        progActions.ViewModel.Maximum.Value = max;
-                        progActions.ViewModel.Value.Value = current;
-                    });
+                    progActions.ViewModel.Maximum.Value = max;
+                    progActions.ViewModel.Value.Value = current;
                 });
 
                 await this.UpdateSongs();
@@ -555,7 +535,7 @@ namespace DanTheMan827.Modulation.Views
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _ = MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

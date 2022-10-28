@@ -3,9 +3,11 @@ using AmpHelper.Enums;
 using AmpHelper.Helpers;
 using AmpHelper.Interfaces;
 using DanTheMan827.ModulateDotNet;
+using DanTheMan827.Modulation.Extensions;
 using DanTheMan827.Modulation.Views;
 using DanTheMan827.TempFolders;
 using Microsoft.Win32;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,56 +27,56 @@ namespace DanTheMan827.Modulation
         public EasyTempFolder? UnpackedTemp = null;
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
-            string? openedPath = null;
-
-            if (e.Args.Length >= 1)
+            try
             {
-                var info = new FileInfo(e.Args[0]);
+                string? openedPath = null;
 
-                if (info.Exists && (info.Name == "main_ps3.hdr" || info.Name == "main_ps4.hdr"))
+                if (e.Args.Length >= 1)
                 {
-                    openedPath = info.Directory?.FullName;
-                }
-            }
-
-            if (openedPath == null)
-            {
-                var ofd = new OpenFileDialog()
-                {
-                    Filter = "main_ps3.hdr / main_ps4.hdr|main_ps3.hdr;main_ps4.hdr"
-                };
-
-                if (ofd.ShowDialog() == true)
-                {
-                    var info = new FileInfo(ofd.FileName);
+                    var info = new FileInfo(e.Args[0]);
 
                     if (info.Exists && (info.Name == "main_ps3.hdr" || info.Name == "main_ps4.hdr"))
                     {
                         openedPath = info.Directory?.FullName;
                     }
                 }
-            }
 
-            if (openedPath == null)
-            {
-                Application.Current.Shutdown();
-                return;
-            }
+                if (openedPath == null)
+                {
+                    var ofd = new OpenFileDialog()
+                    {
+                        Filter = "main_ps3.hdr / main_ps4.hdr|main_ps3.hdr;main_ps4.hdr"
+                    };
+
+                    if (ofd.ShowDialog() == true)
+                    {
+                        var info = new FileInfo(ofd.FileName);
+
+                        if (info.Exists && (info.Name == "main_ps3.hdr" || info.Name == "main_ps4.hdr"))
+                        {
+                            openedPath = info.Directory?.FullName;
+                        }
+                    }
+                }
+
+                if (openedPath == null)
+                {
+                    Application.Current.Shutdown();
+                    return;
+                }
 
 
-            var folderUnpackedState = new UnpackedInfo();
-            folderUnpackedState.Console = HelperMethods.ConsoleTypeFromPath(openedPath) == ConsoleType.PS3 ? UnpackedType.PS3 : UnpackedType.PS4;
-            folderUnpackedState.FromUnpacked = Directory.Exists(Path.Combine(openedPath, folderUnpackedState.Console == UnpackedType.PS3 ? "ps3" : "ps4"));
-            folderUnpackedState.ConsoleLabel = folderUnpackedState.Console.ToString().ToLower();
-            folderUnpackedState.UnpackedPath = openedPath;
-            folderUnpackedState.SourcePath = openedPath;
-            folderUnpackedState.HeaderPath = Path.Combine(openedPath, folderUnpackedState.Console == UnpackedType.PS3 ? "main_ps3.hdr" : "main_ps4.hdr");
-            folderUnpackedState.ExitCode = 0;
+                var folderUnpackedState = new UnpackedInfo();
+                folderUnpackedState.Console = HelperMethods.ConsoleTypeFromPath(openedPath) == ConsoleType.PS3 ? UnpackedType.PS3 : UnpackedType.PS4;
+                folderUnpackedState.FromUnpacked = Directory.Exists(Path.Combine(openedPath, folderUnpackedState.Console == UnpackedType.PS3 ? "ps3" : "ps4"));
+                folderUnpackedState.ConsoleLabel = folderUnpackedState.Console.ToString().ToLower();
+                folderUnpackedState.UnpackedPath = openedPath;
+                folderUnpackedState.SourcePath = openedPath;
+                folderUnpackedState.HeaderPath = Path.Combine(openedPath, folderUnpackedState.Console == UnpackedType.PS3 ? "main_ps3.hdr" : "main_ps4.hdr");
+                folderUnpackedState.ExitCode = 0;
 
-            var mainWindow = new SongsWindow();
+                var mainWindow = new SongsWindow();
 
-            try
-            {
                 if (folderUnpackedState.FromUnpacked == false)
                 {
                     var progressActions = ProgressWindow.GetActions("Unpacking", "Unpacking ark files to temporary folder.");
@@ -121,6 +123,11 @@ namespace DanTheMan827.Modulation
             }
             catch (TaskCanceledException)
             {
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.NiceError(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
             }
         }

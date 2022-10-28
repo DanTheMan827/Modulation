@@ -1,6 +1,5 @@
 ﻿using AmpHelper.Types;
 using DanTheMan827.Modulation.Extensions;
-using DanTheMan827.Modulation.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -17,11 +16,11 @@ namespace DanTheMan827.Modulation
         {
             var songListHtml = new List<string>();
 
-            foreach (var song in songs.OrderBy(song => song.CleanName()).OrderBy(song => HelperMethods.CleanString(song.CleanArtist())))
+            foreach (var song in songs.OrderBy(song => song.CleanName()).OrderBy(song => song.CleanArtist()))
             {
                 songListHtml.AddRange(new string[] {
                     $"\n{Indent(0)}<div class=\"song\">\n",
-                    $"{Indent(1)}<div class=\"title\">\n{Indent(2)}{HttpUtility.HtmlEncode($"{song.CleanArtist} - {song.CleanName}")}",
+                    $"{Indent(1)}<div class=\"title\">\n{Indent(2)}{HttpUtility.HtmlEncode($"{song.CleanArtist()} - {song.CleanName()}")}",
                     !string.IsNullOrWhiteSpace(song.DemoVideo) ? $" - \n{Indent(2)}<a href=\"{HttpUtility.HtmlEncode(song.DemoVideo.Trim())}\" target=\"_blank\">\n{Indent(3)}Demo Video\n{Indent(2)}</a>\n" : "\n",
                     $"{Indent(1)}</div>\n",
 

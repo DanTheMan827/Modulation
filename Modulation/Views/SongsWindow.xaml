@@ -29,6 +29,7 @@
                 </ItemsPanelTemplate>
             </Menu.ItemsPanel>
             <MenuItem Header="_File">
+                <MenuItem Header="_Import Songs" Click="ImportSongs_Click" />
                 <MenuItem Header="_Pack All Songs" Click="PackAllSongs_Click" />
                 <MenuItem Header="_Re-Add All Songs" ToolTip="Rebuild and re-add all custom songs." Click="ReAddSongs_Click" />
                 <Separator />

@@ -16,7 +16,7 @@ namespace DanTheMan827.Modulation.Helpers
             var output = songCleanRegex.Replace(input, "");
             output = spaceCleanRegex.Replace(output, " ");
 
-            return output;
+            return output.Trim();
         }
     }
 }

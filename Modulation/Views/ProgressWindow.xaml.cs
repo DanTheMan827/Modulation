@@ -14,45 +14,68 @@ namespace DanTheMan827.Modulation.Views
     {
         public class ShowCloseActions
         {
-            public Func<Task> Show;
-            public Func<Task> Close;
-            public ProgressWindowViewModel ViewModel;
+            public Func<Task> Show { get; set; }
+            public Func<Task> Close { get; set; }
+            internal ProgressWindow Window { get; set; }
+            internal ProgressWindowViewModel OldModel { get; set; }
+            public ProgressWindowViewModel ViewModel => OldModel ?? Window.ViewModel;
 
             public ShowCloseActions()
             {
                 this.Show = async () => { };
                 this.Close = async () => { };
-                
             }
         }
 
         public static ShowCloseActions GetActions(string title, string message, Window? owner = null, WindowStartupLocation ownedStartupLocation = WindowStartupLocation.CenterOwner)
         {
-            ProgressWindow? progWnd = null;
-            Application.Current.Dispatcher.Invoke(() =>
+
+
+            var actions = new ShowCloseActions();
+
+            var newWnd = () =>
             {
-                progWnd = new ProgressWindow(title, message, owner, ownedStartupLocation);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    actions.Window = new ProgressWindow(title, message, owner, ownedStartupLocation);
+
+                    if (actions.OldModel != null)
+                    {
+                        actions.Window.ViewModel.Title.Value = actions.OldModel.Title.Value;
+                        actions.Window.ViewModel.Message.Value = actions.OldModel.Message.Value;
+                        actions.Window.ViewModel.IsIndeterminate.Value = actions.OldModel.IsIndeterminate.Value;
+                        actions.Window.ViewModel.Minimum.Value = actions.OldModel.Minimum.Value;
+                        actions.Window.ViewModel.Maximum.Value = actions.OldModel.Maximum.Value;
+                        actions.Window.ViewModel.Value.Value = actions.OldModel.Value.Value;
+
+                        actions.OldModel = null;
+                    }
+                });
+            };
+
+            newWnd();
+
+            actions.Show = () => Task.Run(() =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (actions.Window == null)
+                    {
+                        newWnd();
+                    }
+
+                    _ = (actions.Window?.ShowDialog());
+                });
             });
 
-            var actions = new ShowCloseActions
+            actions.Close = async () =>
             {
-                Show = () => Task.Run(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        _ = (progWnd?.ShowDialog());
-                    });
-                }),
-
-                Close = async () =>
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        progWnd?.Close();
-                    });
-                },
-
-                ViewModel = progWnd!.ViewModel
+                    actions.OldModel = actions.Window?.ViewModel;
+                    actions.Window?.Close();
+                    actions.Window = null;
+                });
             };
 
             return actions;
