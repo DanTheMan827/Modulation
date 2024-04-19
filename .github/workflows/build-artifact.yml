@@ -18,6 +18,12 @@ jobs:
       with:
         submodules: recursive
 
+    # get pushed tag
+    - name: Extract tag
+      if: startsWith(github.ref, 'refs/tags/')
+      id: tag
+      run: |
+        echo "TAG=${GITHUB_REF#refs/tags/}" >> ${GITHUB_OUTPUT}
 
     # Install the .NET Core workload
     - name: Install .NET
@@ -30,10 +36,23 @@ jobs:
       run: |
         cd Modulation
         dotnet publish -c Release -o ../publish/Modulation -r win-x64 -p:PublishSingleFile=true --self-contained=false
-        
+
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.0
       with:
         name: "Modulation"
         path: publish/Modulation/Modulation.exe
 
+    # if we had a tag, we should make a release
+    - name: Upload release artifacts
+      if: startsWith(github.ref, 'refs/tags/')
+      id: upload_file_release
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        tag_name: ${{ github.event.inputs.tag }}
+        draft: true
+        generate_release_notes: true
+        files: |
+          ./publish/Modulation/Modulation.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
